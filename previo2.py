@@ -10,18 +10,21 @@ def setspeed(v,w):
     # v = (vd + vi) / 2
     # w = (vd - vi) / L
 
-    vi = 2 * v - vd
-    vd = w * L + (2 * v - vd)
+    # Se representa el sistema de ecuaciones
+    i = np.matrix([[1, 1],[1,-1]])
+    d = np.matrix([[2*v],[L*w]])
 
-    vi = 2 * v - vd
+    vi,vd = (i**-1)*d # Se soluciona el sistema de ecuaciones
 
     # Aplicar velocidad vd al motor derecho
     # Aplicar velocidad vi al motor izquierdo.
 
 def updateOdometry():
-    # Obtener des_s, des_delta
-    des_s = 0
-    des_th = 0
+    
+    des_sd, des_si = 0 # Asignar valor
+
+    des_s = (des_sd + des_si) / 2
+    des_th = (des_sd - des_si) / L
 
     des_x = des_s * np.cos(th + des_th / 2)
     des_y = des_s * np.sin(th + des_th / 2)
