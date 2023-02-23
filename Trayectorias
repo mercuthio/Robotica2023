@@ -1,0 +1,13 @@
+# Descripción de trayectoria 1 (el ocho)
+Colocar robot, v = 0, w = -PI/2, t = 1
+Parte C inicial, v = d*PI, w = PI, t = 1
+Parte O superior, v = d*PI, w = -PI, t = 2
+Parte C final, v = d*PI, w = PI, t = 1
+
+# Descripción de trayectoria 2
+Colocar robot, v = 0, w = PI/2, t = 1
+Parte C/2 inicial, v = a*PI/2, w = -PI/2, t = 1
+Parte Recta inicial, v = r (2), w = 0, t = 1
+Parte C segunda, v = r (1) *PI, w = -PI, t = 1
+Parte Recta segunda, v = r (2), w = 0, t = 1
+Parte C/2 final, v = a*PI/2, w = -PI/2, t = 1
