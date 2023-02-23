@@ -16,7 +16,7 @@ def setspeed(v,w):
     vi = 2 * v - vd
 
     # Aplicar velocidad vd al motor derecho
-    # Aplicar velocidad vi al motor izquierdo
+    # Aplicar velocidad vi al motor izquierdo.
 
 def updateOdometry():
     # Obtener des_s, des_delta
