@@ -52,6 +52,7 @@ def main(args):
         robot = Robot()
 
         print("X value at the beginning from main X= %.2f" %(robot.x.value))
+        
 
         # 1. launch updateOdometry Process()
         #robot.startOdometry()
@@ -59,7 +60,7 @@ def main(args):
         # 2. perform trajectory
 
 
-        prueba_8(robot)
+        # prueba_8(robot)
 
         #robot.lock_odometry.acquire()
         #print("Odom values at main at the END: %.2f, %.2f, %.2f " % (robot.x.value, robot.y.value, robot.th.value))

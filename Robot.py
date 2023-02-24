@@ -7,7 +7,8 @@ from __future__ import division       #                           ''
 import time     # import the time library for the sleep function
 import sys
 import numpy as np
-import brickpi3
+import datetime
+# import brickpi3
 
 # tambien se podria utilizar el paquete de threading
 from multiprocessing import Process, Value, Array, Lock
@@ -30,7 +31,7 @@ class Robot:
         # Motors and sensors setup
 
         # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
-        self.BP = brickpi3.BrickPi3()
+        # self.BP = brickpi3.BrickPi3()
 
         # Configure sensors, for example a touch sensor.
         #self.BP.set_sensor_type(self.BP.PORT_1, self.BP.SENSOR_TYPE.TOUCH)
@@ -50,12 +51,9 @@ class Robot:
 
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
-        self.lock_odometry.acquire()
-        #print('hello world', i)
-        self.lock_odometry.release()
 
         self.P = 0.1
-
+        self.log_file = open(datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt"),"w")
 
 
     def setSpeed(self, v,w):
@@ -68,6 +66,8 @@ class Robot:
 
         self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
         self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
+
+        self.log_file.write("Actualizada velocidad = WI:{},WD:{}".format(speedDPS_left, speedDPS_right))
 
     def readSpeed(self):
         self.lock_odometry.acquire()
@@ -99,8 +99,8 @@ class Robot:
             As = v * self.P
             Ath = w * self.P
 
-            #Ax = As * np.cos(self.th + Ath / 2)
-            #Ay = As * np.sin(self.th + Ath / 2)
+            Ax = As * np.cos(self.th + Ath / 2)
+            Ay = As * np.sin(self.th + Ath / 2)
 
             ######## UPDATE FROM HERE with your code (following the suggested scheme) ########
             # sys.stdout.write("Dummy update of odometry ...., X=  %d, \
@@ -111,10 +111,13 @@ class Robot:
             # (they are declared as value, so lock is implicitly done for atomic operations, BUT =+ is NOT atomic)
 
             self.lock_odometry.acquire()
-            #self.x += Ax
-            #self.y += Ay
-            #self.th += Ath 
+            self.x += Ax
+            self.y += Ay
+            self.th += Ath 
             self.lock_odometry.release()
+
+            with self.lock_odometry.get_lock():
+                self.log_file.write("Actualizada posición = X:{},Y:{},TH:{}".format(self.x, self.y, self.th))
 
             try:
                 # Each of the following BP.get_motor_encoder functions returns the encoder value
