@@ -118,6 +118,7 @@ class Robot:
 
             with self.lock_odometry.get_lock():
                 self.log_file.write("Actualizada posición = X:{},Y:{},TH:{}".format(self.x, self.y, self.th))
+                print("Actualizada posición = X:{},Y:{},TH:{}".format(self.x, self.y, self.th))
 
             try:
                 # Each of the following BP.get_motor_encoder functions returns the encoder value

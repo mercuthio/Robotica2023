@@ -55,7 +55,7 @@ def main(args):
         
 
         # 1. launch updateOdometry Process()
-        #robot.startOdometry()
+        # robot.startOdometry()
 
         # 2. perform trajectory
 
