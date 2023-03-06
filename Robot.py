@@ -57,6 +57,7 @@ class Robot:
 
 
     def setSpeed(self, v,w):
+        """Speed v and w is applied to both engines"""
         print("setting speed to %.2f %.2f" % (v, w))
 
         speedDPS_left = np.degrees(2 * v - self.L * w) / (2 * self.R)
@@ -70,6 +71,7 @@ class Robot:
         self.log_file.write("Actualizada velocidad = WI:{},WD:{}".format(speedDPS_left, speedDPS_right))
 
     def readSpeed(self):
+        """Returns the v and w from the engines"""
         self.lock_odometry.acquire()
         v = self.R * (self.BP.get_motor_encoder(self.BP.PORT_C) + self.BP.get_motor_encoder(self.BP.PORT_B)) / 2
         w = self.R * (self.BP.get_motor_encoder(self.BP.PORT_C) - self.BP.get_motor_encoder(self.BP.PORT_B)) / self.L
@@ -78,6 +80,7 @@ class Robot:
 
 
     def readOdometry(self):
+        """Returns the position of the robot"""
         return self.x.value, self.y.value, self.th.value
 
     def startOdometry(self):
@@ -89,7 +92,7 @@ class Robot:
 
     # You may want to pass additional shared variables besides the odometry values and stop flag
     def updateOdometry(self): #, additional_params?):
-
+        """Updates the position of the robot every self.P seconds"""
         while not self.finished.value:
             # current processor time in a floating point value, in seconds
             tIni = time.clock()
@@ -150,6 +153,7 @@ class Robot:
 
     # Stop the odometry thread.
     def stopOdometry(self):
+        """Kills the process that updates odometry"""
         self.finished.value = True
         #self.BP.reset_all()
 
