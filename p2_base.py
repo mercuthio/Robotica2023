@@ -51,7 +51,7 @@ def main(args):
         # robot = Robot(init_position=args.pos_ini)
         robot = Robot()
 
-        print("X value at the beginning from main X= %.2f" %(robot.x.value))
+        # print("X value at the beginning from main X= %.2f" %(robot.x.value))
         
 
         # 1. launch updateOdometry Process()

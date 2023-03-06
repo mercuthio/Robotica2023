@@ -63,7 +63,7 @@ class Robot:
         speedDPS_left = np.degrees(2 * v - self.L * w) / (2 * self.R)
         speedDPS_right = np.degrees(2 * v + self.L * w) / (2 * self.R)
         
-        print(speedDPS_left, speedDPS_right)
+        # print(speedDPS_left, speedDPS_right)
 
         self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
         self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
@@ -121,7 +121,6 @@ class Robot:
 
             with self.lock_odometry.get_lock():
                 self.log_file.write("Actualizada posición = X:{},Y:{},TH:{}".format(self.x, self.y, self.th))
-                print("Actualizada posición = X:{},Y:{},TH:{}".format(self.x, self.y, self.th))
 
             try:
                 # Each of the following BP.get_motor_encoder functions returns the encoder value
