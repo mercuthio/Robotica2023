@@ -3,6 +3,7 @@
 import argparse
 import numpy as np
 import time
+import math
 from Robot import Robot
 
 
@@ -14,22 +15,48 @@ def prueba_0(robot):
     # time.sleep(12)
     # robot.setSpeed(0, 0)
 
+def girar_odometria(robot, grados, destino):
+    robot.setSpeed(0, np.radians(grados))
+    pos = robot.readOdometry()
+    
+    while abs(pos[2] - destino) > 5:
+        pos = robot.readOdometry()
+    robot.setSpeed(0, 0)
+
+# Desplazo el robot hasta que su odometría coincida con el destino
+def desplazamiento(robot, movimiento, destino):
+    robot.setSpeed(movimiento[0], movimiento[1])
+    pos = robot.readOdometry()
+    while (abs(abs(pos[0]) - abs(destino[0])) > 1.5) or (abs(abs(pos[1]) - abs(destino[1])) > 1.5):
+        pos = robot.readOdometry()
+    robot.setSpeed(0, 0)
 
 def prueba_8(robot, r):
-    robot.setSpeed(0, np.radians(-90))
-    time.sleep(1)
-    robot.setSpeed(r*np.pi/4, np.radians(180 / 4))
-    time.sleep(4)
-    robot.setSpeed(r*np.pi/4, np.radians(-180 / 4))
-    time.sleep(8)
-    robot.setSpeed(r*np.pi/4, np.radians(180 / 4))
-    time.sleep(4)
-    robot.setSpeed(0, np.radians(90))
-    time.sleep(1)
-    robot.setSpeed(0, 0)
+    
+    girar_odometria(robot, -90, -90)
+
+    desplazamiento(robot, [r*np.pi/4, np.radians(180 / 4)], [40, 0])
+    desplazamiento(robot, [r*np.pi/4, np.radians(-180 / 4)], [80, 0])
+    desplazamiento(robot, [r*np.pi/4, np.radians(-180 / 4)], [40, 0])
+    desplazamiento(robot, [r*np.pi/4, np.radians(180 / 4)], [0, 0])
+
+    girar_odometria(robot, 90, 0)
+
+    # robot.setSpeed(0, np.radians(-90))
+    # time.sleep(1)
+    # robot.setSpeed(r*np.pi/4, np.radians(180 / 4))
+    # time.sleep(4)
+    # robot.setSpeed(r*np.pi/4, np.radians(-180 / 4))
+    # time.sleep(8)
+    # robot.setSpeed(r*np.pi/4, np.radians(180 / 4))
+    # time.sleep(4)
+    # robot.setSpeed(0, np.radians(90))
+    # time.sleep(1)
+    # robot.setSpeed(0, 0)
 
 
 def prueba_2(robot):
+
     robot.setSpeed(0, np.radians(90))
     time.sleep(1)
     robot.setSpeed(10*np.pi/2, np.radians(-65))
@@ -72,8 +99,10 @@ def main(args):
         print("Odom values at main at the END: %.2f, %.2f, %.2f " %
               (robot.x.value, robot.y.value, robot.th.value))
         robot.lock_odometry.release()
+        
+        # prueba_8(robot, args.radioD)
 
-        prueba_8(robot, args.radioD)
+        prueba_2(robot)
 
         # 3. wrap up and close stuff ...
         # This currently unconfigure the sensors, disable the motors,

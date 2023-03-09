@@ -57,7 +57,7 @@ class Robot:
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
 
-        self.P = 0.05
+        self.P = 0.01
         self.log_file = open(datetime.datetime.now().strftime(
             "logs/log-%Hh-%Mm-%Ss.txt"), "w")
 
@@ -89,7 +89,7 @@ class Robot:
 
     def readOdometry(self):
         """Returns the position of the robot"""
-        return self.x.value, self.y.value, self.th.value
+        return self.x.value, self.y.value, np.degrees(self.th.value)
 
     def startOdometry(self):
         """ This starts a new process/thread that will be updating the odometry periodically """
