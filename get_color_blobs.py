@@ -82,7 +82,7 @@ keypoints_blue = detector.detect(255-mask_blue)
 
 # documentation of SimpleBlobDetector is not clear on what kp.size is exactly, but it looks like the diameter of the blob.
 for kp in keypoints_red:
-	print kp.pt[0], kp.pt[1], kp.size
+	print (kp.pt[0], kp.pt[1], kp.size)
 
 # Draw detected blobs as red circles.
 # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures

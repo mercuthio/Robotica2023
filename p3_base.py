@@ -9,7 +9,7 @@ from Robot import Robot
 def main(args):
     try:
         if args.radioD < 0:
-            print 'd must be a positive value'
+            print ('d must be a positive value')
             exit(1)
 
         # Initialize Odometry. Default value will be 0,0,0

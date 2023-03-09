@@ -1,4 +1,6 @@
 import math
+import time
+import numpy as np
 
 def trackObject(self, targetSize, target, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255]):
     # , catch=??, ...)
@@ -7,7 +9,7 @@ def trackObject(self, targetSize, target, colorRangeMin=[0,0,0], colorRangeMax=[
     targetFound = False
     targetPositionReached = False
 
-    a = math.pi * (targetSize / 2)**2 
+    A = math.pi * (targetSize / 2)**2 
 
     while not finished:
         # 1. search the most promising blob ..
@@ -18,7 +20,7 @@ def trackObject(self, targetSize, target, colorRangeMin=[0,0,0], colorRangeMax=[
             if (blob != -1):
                 targetFound = True
                 break
-            self.set_speed(0, 3)
+            self.set_speed(0, np.radians(10))
 
         while not targetPositionReached: 
             # 2. decide v and w for the robot to get closer to target position
@@ -29,7 +31,7 @@ def trackObject(self, targetSize, target, colorRangeMin=[0,0,0], colorRangeMax=[
                 break
 
             # blob.size = diametro
-            A = math.pi * (blob.size / 2)**2
+            a = math.pi * (blob.size / 2)**2
             d = blob.x - target 
 
             v = A-a
@@ -44,5 +46,7 @@ def catch(self):
     # decide the strategy to catch the ball once you have reached the target position
 
     # Bajar cesta
-    speed = 10
+    speed = 5
     self.BP.set_motor_dps(self.BP.PORT_A, speed)
+    time.sleep(3)
+    self.BP.set_motor_dps(self.BP.PORT_A, 0)
