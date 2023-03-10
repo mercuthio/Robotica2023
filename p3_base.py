@@ -6,14 +6,18 @@ import numpy as np
 import time
 from Robot import Robot
 
+# def centrar_pelota(robot):
+#     Ancho_imagen = 640
+#     # Mientras no este centrada, girar hasta que este centrada
+#     while True:
+#         pelota = get_blob()
+
 def main(args):
     try:
-        if args.radioD < 0:
-            print ('d must be a positive value')
-            exit(1)
 
         # Initialize Odometry. Default value will be 0,0,0
-        robot = Robot() 
+        robot = Robot()
+
         # 1. launch updateOdometry thread()
         robot.startOdometry()
 
@@ -25,8 +29,23 @@ def main(args):
     	# res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255], 
         #                   targetSize=??, target??=??, ...)
 
+        res = robot.trackObject(2, 1, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255])
+        # robot.catch()
+        
+
         # if res:
         #   robot.catch
+
+        # Compruebo si hay rojo
+        # Si no lo hay
+        #   Buscar la pelota
+        # Si lo hay
+        #   Compruebo si hay circulo rojo
+        #   Si no lo hay
+        #       OK
+        #   Si lo hay
+        #       Buscar la pelota
+
 
         # 3. wrap up and close stuff ...
         # This currently unconfigure the sensors, disable the motors, 
@@ -49,5 +68,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args)
-
-
