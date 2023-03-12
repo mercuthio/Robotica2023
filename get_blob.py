@@ -1,6 +1,9 @@
 import cv2
 from cv2 import VideoCapture
 import numpy as np
+import time
+
+# Precálculo de parametros-----------------------------------------
 
 redMin1 = np.array([0,50,50])
 redMax1 = np.array([3,255,255])
@@ -30,57 +33,66 @@ params.filterByColor = False
 params.filterByConvexity = False
 params.filterByInertia = False
 
+# Create a detector with the parameters
+ver = (cv2.__version__).split('.')
+if int(ver[0]) < 3 :
+    detector = cv2.SimpleBlobDetector(params)
+else :
+    detector = cv2.SimpleBlobDetector_create(params)    
+
+# Función get_blob() ------------------------------------------------
+
 def get_blob():
     # Abre la cámara y toma una foto
     cam = VideoCapture(0)
-    out, img = cam.read()
+    _, img = cam.read()
 
+    # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)
     # cv2.waitKey(1)
 
     # Convierte la imagen a HSV
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
-    # Create a detector with the parameters
-    ver = (cv2.__version__).split('.')
-    if int(ver[0]) < 3 :
-        detector = cv2.SimpleBlobDetector(params)
-    else :
-        detector = cv2.SimpleBlobDetector_create(params)    
-
+    # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
     mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
     mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
     mask_red = mask_red1 + mask_red2
 
-    img_aux = img_hsv.copy()
-    img_aux[np.where(mask_red==0)] = 0
-
     # Detectamos los blobs en la imagen
-    keypoints_red = detector.detect(255-mask_red)
+    keypoints_red = detector.detect(255-mask_red)     
 
-    # Printeo la coordenada x, la y y el tamaño del blob más grande de los que
-    # ha detectado
-    if len(keypoints_red) > 0:
-        print(keypoints_red[0].pt[0])
-        print(keypoints_red[0].size)
-    else:
-        print("No se ha encontrado ninguna pelota")
-
-    if len(keypoints_red) == 0:
-        return -1
+    # ELiminamos todos los pixeles de la imagen original que no contengan 
+    # ningun tono de rojo en la mascara (Solo para debug)
+    # red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
 
     # Dibujamos en la imagen los keypoints detectados
-    im_with_keypoints = cv2.drawKeypoints(img_aux, keypoints_red, np.array([]),
-	(255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
+	# (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
+    # img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
+    # cv2.imshow("Keypoints on RED", img_blob)
+    # cv2.waitKey(0)
 
-    cv2.imshow("Keypoints on RED", img_blob)
-    cv2.waitKey(1)
-
-    # Devuelvo la coordenada x, la y y el tamaño del blob más grande de los que
+    # Devuelvo y printeo la coordenada x, y el diametro del blob más grande de los que
     # ha detectado
     if len(keypoints_red) > 0:
+        # print("Pelota en X: {}".format(keypoints_red[0].pt[0]))
+        # print("Diametro de pelota: {}".format(keypoints_red[0].size))
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
+    else:
+        # print("No se ha encontrado ninguna pelota")
+        return -1   
     
-# get_blob()
+
+tiempos = 0
+veces = 10
+for i in range(veces):
+    start = time.time()
+    get_blob()
+    end = time.time()
+    tiempos += end-start
+
+media = tiempos / veces
+
+print("MEDIA DE TIEMPOS: {}".format(media))
