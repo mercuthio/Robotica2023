@@ -234,8 +234,6 @@ class Robot:
                 # blob[1] = diametro, blob[0] = x
                 a = np.pi * (blob[1] / 2)**2
                 d = blob[0] - target 
-                print(a)
-                print(d)
                 # Sacamos una velocidad lineal y angular en función de la 
                 # distancia y el área de la pelota para perseguirla.
                 v = np.clip(A-a, 0, 20)
@@ -244,7 +242,7 @@ class Robot:
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
-                if A-a <= 3 and np.abs(d) <= 0.1: # Medir valores con pelota en posicion correcta 
+                if A-a <= 20 and np.abs(d) <= 20: # Medir valores con pelota en posicion correcta 
                     targetPositionReached = True
                     finished = True
                     self.setSpeed(20,0)
