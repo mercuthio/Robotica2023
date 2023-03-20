@@ -25,7 +25,7 @@ params.maxArea = 20000
 
 # Filtro de aceptación de la circularidad (forma) de los blobs
 params.filterByCircularity = True
-params.minCircularity = 0.10
+params.minCircularity = 0.25
 
 # Desactivamos los filtros de color, convexidad e inercia
 params.filterByColor = False
@@ -66,7 +66,7 @@ def get_blob():
     # ningun tono de rojo en la mascara (Solo para debug)
     # red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
 
-    # Dibujamos en la imagen los keypoints detectados
+    # # Dibujamos en la imagen los keypoints detectados
     # im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
 	# (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
@@ -85,14 +85,14 @@ def get_blob():
         return -1   
     
 
-tiempos = 0
-veces = 10
-for i in range(veces):
-    start = time.time()
-    get_blob()
-    end = time.time()
-    tiempos += end-start
+# tiempos = 0
+# veces = 10
+# while 1:
+#     start = time.time()
+#     get_blob()
+#     end = time.time()
+#     tiempos += end-start
 
-media = tiempos / veces
+# media = tiempos / veces
 
-print("MEDIA DE TIEMPOS: {}".format(media))
+# print("MEDIA DE TIEMPOS: {}".format(media))

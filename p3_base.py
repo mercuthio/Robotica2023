@@ -13,13 +13,14 @@ from Robot import Robot
 #         pelota = get_blob()
 
 def main(args):
+    print("sergio arreglador de coches jubilado")
     try:
-
+        print("EMPIEZO")
         # Initialize Odometry. Default value will be 0,0,0
         robot = Robot()
 
         # 1. launch updateOdometry thread()
-        robot.startOdometry()
+        # robot.startOdometry()
 
         # 2. Loop running the tracking until ??, then catch the ball
         # TO-DO: ADD to the Robot class a method to track an object, given certain parameters
@@ -28,8 +29,8 @@ def main(args):
         # At least COLOR, the rest are up to you, but always put a default value.
     	# res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255], 
         #                   targetSize=??, target??=??, ...)
-
-        res = robot.trackObject(2, 1, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255])
+        print("A TRACKEAR")
+        res = robot.trackObject(149, 320, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255])
         # robot.catch()
         
 
@@ -50,7 +51,7 @@ def main(args):
         # 3. wrap up and close stuff ...
         # This currently unconfigure the sensors, disable the motors, 
         # and restore the LED to the control of the BrickPi3 firmware.
-        robot.stopOdometry()
+        # robot.stopOdometry()
 
 
     except KeyboardInterrupt: 

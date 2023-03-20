@@ -200,7 +200,6 @@ class Robot:
 
         while not finished:
             # 1. search the most promising blob ..
-
             while not targetFound:
                 # Dar vueltras buscando la pelota
                 blob = get_blob.get_blob()
@@ -213,10 +212,10 @@ class Robot:
                     break
                 
                 # Si no ha encontrado la pelota, da vueltas
-                if (x_anterior < 640/2):
-                    self.setSpeed(0, np.radians(40))
+                if (x_anterior < target):
+                    self.setSpeed(0, np.radians(60))
                 else:
-                    self.setSpeed(0, np.radians(-40))
+                    self.setSpeed(0, np.radians(-60))
 
             while not targetPositionReached: 
                 # 2. decide v and w for the robot to get closer to target position
@@ -235,18 +234,23 @@ class Robot:
                 # blob[1] = diametro, blob[0] = x
                 a = np.pi * (blob[1] / 2)**2
                 d = blob[0] - target 
-
+                print(a)
+                print(d)
                 # Sacamos una velocidad lineal y angular en función de la 
                 # distancia y el área de la pelota para perseguirla.
-                v = A-a
-                w = -d
+                v = np.clip(A-a, 0, 20)
+                w = np.radians(np.clip(-d, -20, 20))
                 self.setSpeed(v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
-                if A-a <= 3 and d <= 0.1: # Medir valores con pelota en posicion correcta 
+                if A-a <= 3 and np.abs(d) <= 0.1: # Medir valores con pelota en posicion correcta 
                     targetPositionReached = True
                     finished = True
+                    self.setSpeed(20,0)
+                    time.sleep(1)
+                    self.setSpeed(0,0)
+                    self.catch()
 
     def catch(self):
         # Bajar cesta
