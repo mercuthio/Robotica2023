@@ -5,4 +5,4 @@ from Robot import Robot
 
 robot = Robot()
 
-robot.setSpeed(0,0)
+robot.setSpeed(0, 0)

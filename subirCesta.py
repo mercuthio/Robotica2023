@@ -6,4 +6,4 @@ from Robot import Robot
 robot = Robot()
 
 robot.uncatch()
-robot.setSpeed(0,0)
+robot.setSpeed(0, 0)

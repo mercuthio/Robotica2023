@@ -15,15 +15,18 @@ def prueba_0(robot):
     # time.sleep(12)
     # robot.setSpeed(0, 0)
 
+
 def girar_odometria(robot, grados, destino):
     robot.setSpeed(0, np.radians(grados))
     pos = robot.readOdometry()
-    
+
     while abs(pos[2] - destino) > 5:
         pos = robot.readOdometry()
     robot.setSpeed(0, 0)
 
 # Desplazo el robot hasta que su odometría coincida con el destino
+
+
 def desplazamiento(robot, movimiento, destino):
     robot.setSpeed(movimiento[0], movimiento[1])
     pos = robot.readOdometry()
@@ -31,8 +34,9 @@ def desplazamiento(robot, movimiento, destino):
         pos = robot.readOdometry()
     robot.setSpeed(0, 0)
 
+
 def prueba_8(robot, r):
-    
+
     girar_odometria(robot, -90, -90)
 
     desplazamiento(robot, [r*np.pi/4, np.radians(180 / 4)], [40, 0])
@@ -99,7 +103,7 @@ def main(args):
         print("Odom values at main at the END: %.2f, %.2f, %.2f " %
               (robot.x.value, robot.y.value, robot.th.value))
         robot.lock_odometry.release()
-        
+
         # prueba_8(robot, args.radioD)
 
         prueba_2(robot)
@@ -112,6 +116,7 @@ def main(args):
     except KeyboardInterrupt:
         # except the program gets interrupted by Ctrl+C on the keyboard.
         # THIS IS IMPORTANT if we want that motors STOP when we Ctrl+C ...
+        robot.setSpeed(0, 0)
         robot.stopOdometry()
 
 

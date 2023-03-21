@@ -151,7 +151,7 @@ class Robot:
 
             # save LOG
             # print("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime("%Hh-%Mm-%Ss.txt"),
-                #   round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
+            #   round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
             self.log_file.write("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
                 "%Hh-%Mm-%Ss"), round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
             self.log_file.flush()
@@ -187,7 +187,7 @@ class Robot:
         # self.BP.reset_all()
 
     # Operación para perseguir y capturar la pelota.
-    def trackObject(self, targetSize, target, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255]):
+    def trackObject(self, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
 
         finished = False
         targetFound = False
@@ -195,7 +195,7 @@ class Robot:
 
         # A es el área que debe tener la pelota cuando el robot la tenga delante
         # para cogerla
-        A = np.pi * (targetSize / 2)**2 
+        A = np.pi * (targetSize / 2)**2
         x_anterior = 0
 
         while not finished:
@@ -210,14 +210,14 @@ class Robot:
                     self.setSpeed(0, 0)
                     targetFound = True
                     break
-                
+
                 # Si no ha encontrado la pelota, da vueltas
                 if (x_anterior < target):
                     self.setSpeed(0, np.radians(60))
                 else:
                     self.setSpeed(0, np.radians(-60))
 
-            while not targetPositionReached: 
+            while not targetPositionReached:
                 # 2. decide v and w for the robot to get closer to target position
                 print(blob[0])
                 x_anterior = blob[0]
@@ -228,13 +228,13 @@ class Robot:
                 if (blob == -1):
                     targetFound = False
                     break
-                
+
                 # a es el área de la pelota que ha encontrado y d la distancia
                 # de la pelota en la imágen de donde debería estar.
                 # blob[1] = diametro, blob[0] = x
                 a = np.pi * (blob[1] / 2)**2
-                d = blob[0] - target 
-                # Sacamos una velocidad lineal y angular en función de la 
+                d = blob[0] - target
+                # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
                 v = np.clip(A-a, 0, 20)
                 w = np.radians(np.clip(-d, -20, 20))
@@ -242,12 +242,13 @@ class Robot:
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
-                if A-a <= 20 and np.abs(d) <= 20: # Medir valores con pelota en posicion correcta 
+                # Medir valores con pelota en posicion correcta
+                if A-a <= 20 and np.abs(d) <= 20:
                     targetPositionReached = True
                     finished = True
-                    self.setSpeed(20,0)
+                    self.setSpeed(20, 0)
                     time.sleep(1)
-                    self.setSpeed(0,0)
+                    self.setSpeed(0, 0)
                     self.catch()
 
     def catch(self):
@@ -263,4 +264,3 @@ class Robot:
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.5)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
-

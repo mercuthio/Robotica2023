@@ -12,6 +12,7 @@ from Robot import Robot
 #     while True:
 #         pelota = get_blob()
 
+
 def main(args):
     try:
         # Initialize Odometry. Default value will be 0,0,0
@@ -25,11 +26,11 @@ def main(args):
         # for example the different target properties we want (size, position, color, ..)
         # or a boolean to indicate if we want the robot to catch the object or not
         # At least COLOR, the rest are up to you, but always put a default value.
-    	# res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255], 
+        # res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255],
         #                   targetSize=??, target??=??, ...)
-        res = robot.trackObject(149, 320, colorRangeMin=[0,0,0], colorRangeMax=[255,255,255])
+        res = robot.trackObject(149, 320, colorRangeMin=[
+                                0, 0, 0], colorRangeMax=[255, 255, 255])
         # robot.catch()
-        
 
         # if res:
         #   robot.catch
@@ -44,17 +45,17 @@ def main(args):
         #   Si lo hay
         #       Buscar la pelota
 
-
         # 3. wrap up and close stuff ...
-        # This currently unconfigure the sensors, disable the motors, 
+        # This currently unconfigure the sensors, disable the motors,
         # and restore the LED to the control of the BrickPi3 firmware.
         # robot.stopOdometry()
 
-
-    except KeyboardInterrupt: 
-    # except the program gets interrupted by Ctrl+C on the keyboard.
-    # THIS IS IMPORTANT if we want that motors STOP when we Ctrl+C ...
+    except KeyboardInterrupt:
+        # except the program gets interrupted by Ctrl+C on the keyboard.
+        # THIS IS IMPORTANT if we want that motors STOP when we Ctrl+C ...
+        robot.setSpeed(0, 0)
         robot.stopOdometry()
+
 
 if __name__ == "__main__":
 
