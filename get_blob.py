@@ -14,7 +14,6 @@ redMax2 = np.array([180, 255, 255])
 # Hace el setup de los parámetros para el detector de blobs
 params = cv2.SimpleBlobDetector_Params()
 
-# Umbrales de ejemplo para el detector de blobs
 params.minThreshold = 10
 params.maxThreshold = 200
 
@@ -40,12 +39,13 @@ if int(ver[0]) < 3:
 else:
     detector = cv2.SimpleBlobDetector_create(params)
 
+cam = VideoCapture(0)
+
 # Función get_blob() ------------------------------------------------
 
 
-def get_blob():
+def get_blob(show):
     # Abre la cámara y toma una foto
-    cam = VideoCapture(0)
     _, img = cam.read()
 
     # Debug para mostrar fotos sacadas
@@ -65,15 +65,16 @@ def get_blob():
 
     # ELiminamos todos los pixeles de la imagen original que no contengan
     # ningun tono de rojo en la mascara (Solo para debug)
-    # red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
+    if show:
+        red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
 
-    # # Dibujamos en la imagen los keypoints detectados
-    # im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
-    # (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # Dibujamos en la imagen los keypoints detectados
+        im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
+        (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    # img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
-    # cv2.imshow("Keypoints on RED", img_blob)
-    # cv2.waitKey(0)
+        img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
+        cv2.imshow("Keypoints on RED", img_blob)
+        cv2.waitKey(0)
 
     # Devuelvo y printeo la coordenada x, y el diametro del blob más grande de los que
     # ha detectado

@@ -10,7 +10,7 @@ import sys
 import numpy as np
 import datetime
 import brickpi3
-import get_blob
+from get_blob import get_blob
 import cv2
 
 # tambien se podria utilizar el paquete de threading
@@ -66,7 +66,7 @@ class Robot:
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
 
-        print("setting speed to %.2f %.2f" % (v, w))
+        # print("setting speed to %.2f %.2f" % (v, w))
 
         speedDPS_left = np.degrees((2 * v - self.L * w) / (2 * self.R))
         speedDPS_right = np.degrees((2 * v + self.L * w) / (2 * self.R))
@@ -202,32 +202,23 @@ class Robot:
             # 1. search the most promising blob ..
             while not targetFound:
                 # Dar vueltras buscando la pelota
-                blob = get_blob.get_blob()
-                print(blob)
+                blob = get_blob(False)
 
                 # Si ha encontrado la pelota, sale del bucle
                 if (blob != -1):
-                    self.setSpeed(0, 0)
+                    # self.setSpeed(0,0)
                     targetFound = True
                     break
 
-                # Si no ha encontrado la pelota, da vueltas
+                # Si no ha encontrado la pelota da vueltas
                 if (x_anterior < target):
-                    self.setSpeed(0, np.radians(60))
+                    self.setSpeed(0, np.radians(30))
                 else:
-                    self.setSpeed(0, np.radians(-60))
+                    self.setSpeed(0, np.radians(-30))
 
             while not targetPositionReached:
                 # 2. decide v and w for the robot to get closer to target position
-                print(blob[0])
                 x_anterior = blob[0]
-
-                # Revisa si sigue teniendo la pelota delante, si no la tiene
-                # volvemos a buscarla
-                blob = get_blob.get_blob()
-                if (blob == -1):
-                    targetFound = False
-                    break
 
                 # a es el área de la pelota que ha encontrado y d la distancia
                 # de la pelota en la imágen de donde debería estar.
@@ -236,31 +227,44 @@ class Robot:
                 d = blob[0] - target
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
-                v = np.clip(A-a, 0, 20)
-                w = np.radians(np.clip(-d, -20, 20))
+                v = np.clip(A-a, 0, 20) * 0.5
+                w = np.radians(np.clip(-d, -20, 20)) * 0.5
                 self.setSpeed(v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
-                if A-a <= 20 and np.abs(d) <= 20:
+
+                print("AREA:", A-a)
+                print("DIS:", d)
+                if A-a <= 8000 and np.abs(d) >= 80:
                     targetPositionReached = True
                     finished = True
-                    self.setSpeed(20, 0)
-                    time.sleep(1)
+                    self.setSpeed(21/2, 0)
+                    time.sleep(2)
                     self.setSpeed(0, 0)
                     self.catch()
+                    time.sleep(3)
+                    self.uncatch() # DEBUG
+
+                # Revisa si sigue teniendo la pelota delante, si no la tiene
+                # volvemos a buscarla
+                # self.setSpeed(0, 0)
+                blob = get_blob(False)
+                if (blob == -1):
+                    targetFound = False
+                    break
 
     def catch(self):
         # Bajar cesta
         speed = 150
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
-        time.sleep(0.5)
+        time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
     def uncatch(self):
         # Subir cesta
         speed = -150
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
-        time.sleep(0.5)
+        time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
