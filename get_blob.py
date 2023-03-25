@@ -39,14 +39,64 @@ if int(ver[0]) < 3:
 else:
     detector = cv2.SimpleBlobDetector_create(params)
 
-cam = VideoCapture(0)
+# Para detectar solo color
+params.filterByCircularity = False 
+
+if int(ver[0]) < 3:
+    detector2 = cv2.SimpleBlobDetector(params)
+else:
+    detector2 = cv2.SimpleBlobDetector_create(params)
+
+# cam = VideoCapture(0)
+cam = VideoCapture('http://192.168.7.172:8080/video')
+
+res_reduction = 100 # Porcentaje de reduccion de la resolucion de la imagen, 100 = Ninguno
 
 # Función get_blob() ------------------------------------------------
+def get_red(show):
+    _, img = cam.read()
 
+    height, width = img.shape[:2]
+    new_height = int(height * res_reduction / 100)
+    new_width = int(width * res_reduction / 100)
+
+    img = cv2.resize(img, [new_width, new_height])
+
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+    # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
+    mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
+    mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
+    mask_red = cv2.bitwise_or(mask_red1, mask_red2)
+
+    keypoints_red = detector2.detect(255-mask_red)
+
+    if show:
+        red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
+
+        # Dibujamos en la imagen los keypoints detectados
+        im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
+        (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
+        cv2.imshow("Keypoints on RED", img_blob)
+        cv2.waitKey(0)
+
+    if len(keypoints_red) > 0:
+        return True
+    else:
+        return False
 
 def get_blob(show):
-    # Abre la cámara y toma una foto
+    # Toma una foto
     _, img = cam.read()
+    
+    # Se reduce la resolución de la imagen para mayor eficiencia
+    height, width = img.shape[:2]
+    new_height = int(height * res_reduction / 100)
+    new_width = int(width * res_reduction / 100)
+
+    img = cv2.resize(img, [new_width, new_height])
 
     # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)
@@ -58,7 +108,7 @@ def get_blob(show):
     # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
     mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
     mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
-    mask_red = mask_red1 + mask_red2
+    mask_red = cv2.bitwise_or(mask_red1, mask_red2)
 
     # Detectamos los blobs en la imagen
     keypoints_red = detector.detect(255-mask_red)
@@ -77,21 +127,18 @@ def get_blob(show):
         cv2.waitKey(0)
 
     # Devuelvo y printeo la coordenada x, y el diametro del blob más grande de los que
-    # ha detectado
+    # ha detectado, en caso de no detectar nada se devuelve -1
     if len(keypoints_red) > 0:
-        # print("Pelota en X: {}".format(keypoints_red[0].pt[0]))
-        # print("Diametro de pelota: {}".format(keypoints_red[0].size))
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
     else:
-        # print("No se ha encontrado ninguna pelota")
         return -1
 
 
 # tiempos = 0
-# veces = 10
-# while 1:
+# veces = 1
+# for i in range(0, veces):
 #     start = time.time()
-#     get_blob()
+#     get_blob(False)
 #     end = time.time()
 #     tiempos += end-start
 
