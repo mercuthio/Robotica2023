@@ -47,20 +47,13 @@ if int(ver[0]) < 3:
 else:
     detector2 = cv2.SimpleBlobDetector_create(params)
 
-# cam = VideoCapture(0)
-cam = VideoCapture('http://192.168.7.172:8080/video')
-
-res_reduction = 100 # Porcentaje de reduccion de la resolucion de la imagen, 100 = Ninguno
+cam = VideoCapture(0)
+cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+# cam = VideoCapture('http://192.168.7.172:8080/video')
 
 # Función get_blob() ------------------------------------------------
 def get_red(show):
     _, img = cam.read()
-
-    height, width = img.shape[:2]
-    new_height = int(height * res_reduction / 100)
-    new_width = int(width * res_reduction / 100)
-
-    img = cv2.resize(img, [new_width, new_height])
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -87,17 +80,17 @@ def get_red(show):
     else:
         return False
 
+def get_img():
+    _, img = cam.read()
+    return img
+
 def get_blob(show):
     # Toma una foto
-    _, img = cam.read()
+    img = get_img()
+    # print(img.shape[:2])
+    # img = get_img() if img is None else img
+    # img = get_img() if img is None else img
     
-    # Se reduce la resolución de la imagen para mayor eficiencia
-    height, width = img.shape[:2]
-    new_height = int(height * res_reduction / 100)
-    new_width = int(width * res_reduction / 100)
-
-    img = cv2.resize(img, [new_width, new_height])
-
     # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)
     # cv2.waitKey(1)
@@ -124,7 +117,7 @@ def get_blob(show):
 
         img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
         cv2.imshow("Keypoints on RED", img_blob)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
     # Devuelvo y printeo la coordenada x, y el diametro del blob más grande de los que
     # ha detectado, en caso de no detectar nada se devuelve -1
@@ -135,10 +128,10 @@ def get_blob(show):
 
 
 # tiempos = 0
-# veces = 1
+# veces = 100
 # for i in range(0, veces):
 #     start = time.time()
-#     get_blob(False)
+#     get_blob(True)
 #     end = time.time()
 #     tiempos += end-start
 

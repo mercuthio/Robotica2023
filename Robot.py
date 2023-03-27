@@ -198,8 +198,10 @@ class Robot:
         A = np.pi * (targetSize / 2)**2
         x_anterior = 0
 
+        # Mientras no termine el ejercicio de buscar la pelota
         while not finished:
-            # 1. search the most promising blob ..
+            
+            # 1 - Mientras no haya enconrado la pelota
             while not targetFound:
                 # Dar vueltras buscando la pelota
                 blob = get_blob(False)
@@ -212,9 +214,9 @@ class Robot:
 
                 # Si no ha encontrado la pelota da vueltas
                 if (x_anterior < target):
-                    self.setSpeed(0, np.radians(30))
+                    self.setSpeed(0, np.radians(60))
                 else:
-                    self.setSpeed(0, np.radians(-30))
+                    self.setSpeed(0, np.radians(-60))
 
             while not targetPositionReached:
                 # 2. decide v and w for the robot to get closer to target position
@@ -228,7 +230,7 @@ class Robot:
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
                 v = np.clip(A-a, 0, 20) * 0.5
-                w = np.radians(np.clip(-d, -20, 20)) * 0.5
+                w = np.radians(np.clip(-d, -20, 20)) * 0.8
                 self.setSpeed(v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
@@ -237,15 +239,47 @@ class Robot:
 
                 print("AREA:", A-a)
                 print("DIS:", d)
-                if A-a <= 8000 and np.abs(d) >= 80:
-                    targetPositionReached = True
-                    finished = True
-                    self.setSpeed(21/2, 0)
-                    time.sleep(2)
-                    self.setSpeed(0, 0)
-                    self.catch()
-                    time.sleep(3)
-                    self.uncatch() # DEBUG
+
+                MARGEN_AREA = 8000
+                MARGEN_DISTANCIA = 0.5 #80
+
+                diferencia_areas = A-a
+
+                # Comprobamos si tenemos ya la pelota delante nuestro
+                if A-a <= MARGEN_AREA:
+                    while np.abs(d) >= MARGEN_DISTANCIA:
+                        # Revisa si sigue teniendo la pelota delante, si no la tiene
+                        # volvemos a buscarla
+                        blob = get_blob(False)
+                        if (blob == -1):
+                            targetFound = False
+                            break
+
+                        # Calculo cuanto tengo que corregir la orientacion
+                        d = blob[0] - target
+                        w = np.radians(np.clip(-d, -20, 20)) * 0.2
+                        print(d)
+                        
+                        # Giro para corregir la orientacion
+                        self.setSpeed(0, w)
+
+
+                    if targetFound:
+                        targetPositionReached = True
+                        finished = True
+
+                        # Avanzo hasta la pelota
+                        # self.setSpeed(21/2, 0)
+                        self.setSpeed(((A-a) * 10) / 8000, 0 )
+                        time.sleep(2)
+                        self.setSpeed(0, 0)
+
+                        # Bajo la cesta
+                        self.catch()
+
+                        # Espero y levanto la cesta
+                        time.sleep(3)
+                        self.uncatch() # DEBUG
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
@@ -257,14 +291,14 @@ class Robot:
 
     def catch(self):
         # Bajar cesta
-        speed = 150
+        speed = 135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
     def uncatch(self):
         # Subir cesta
-        speed = -150
+        speed = -135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
