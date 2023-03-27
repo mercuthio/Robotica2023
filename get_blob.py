@@ -87,7 +87,6 @@ def get_img():
 def get_blob(show):
     # Toma una foto
     img = get_img()
-    # print(img.shape[:2])
     # img = get_img() if img is None else img
     # img = get_img() if img is None else img
     

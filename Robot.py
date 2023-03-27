@@ -201,9 +201,10 @@ class Robot:
         # Mientras no termine el ejercicio de buscar la pelota
         while not finished:
             
-            # 1 - Mientras no haya enconrado la pelota
+            # 1 - Busca la pelota girando sobre sí mismo
             while not targetFound:
-                # Dar vueltras buscando la pelota
+
+                # Da vueltras buscando la pelota
                 blob = get_blob(False)
 
                 # Si ha encontrado la pelota, sale del bucle
@@ -218,8 +219,9 @@ class Robot:
                 else:
                     self.setSpeed(0, np.radians(-60))
 
+            # 2 - Decido un v y un w para acercarme a la pelota
             while not targetPositionReached:
-                # 2. decide v and w for the robot to get closer to target position
+                
                 x_anterior = blob[0]
 
                 # a es el área de la pelota que ha encontrado y d la distancia
@@ -229,8 +231,9 @@ class Robot:
                 d = blob[0] - target
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
-                v = np.clip(A-a, 0, 20) * 0.5
-                w = np.radians(np.clip(-d, -20, 20)) * 0.8
+
+                v = np.clip((A-a) / 800, 0, 100) * 0.8
+                w = np.radians(np.clip(-d, -20, 20)) * 0.5
                 self.setSpeed(v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
@@ -240,28 +243,26 @@ class Robot:
                 print("AREA:", A-a)
                 print("DIS:", d)
 
-                MARGEN_AREA = 8000
-                MARGEN_DISTANCIA = 0.5 #80
-
-                diferencia_areas = A-a
+                MARGEN_AREA = 5000
+                MARGEN_DISTANCIA = 75 #3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
-                if A-a <= MARGEN_AREA:
-                    while np.abs(d) >= MARGEN_DISTANCIA:
-                        # Revisa si sigue teniendo la pelota delante, si no la tiene
-                        # volvemos a buscarla
-                        blob = get_blob(False)
-                        if (blob == -1):
-                            targetFound = False
-                            break
+                if np.abs(A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
+                    # while np.abs(d) >= MARGEN_DISTANCIA:
+                    #     # Revisa si sigue teniendo la pelota delante, si no la tiene
+                    #     # volvemos a buscarla
+                    #     blob = get_blob(False)
+                    #     if (blob == -1):
+                    #         targetFound = False
+                    #         break
 
-                        # Calculo cuanto tengo que corregir la orientacion
-                        d = blob[0] - target
-                        w = np.radians(np.clip(-d, -20, 20)) * 0.2
-                        print(d)
+                    #     # Calculo cuanto tengo que corregir la orientacion
+                    #     d = blob[0] - target
+                    #     w = np.radians(np.clip(-d, -20, 20)) * 0.2
+                    #     print(d)
                         
-                        # Giro para corregir la orientacion
-                        self.setSpeed(0, w)
+                    #     # Giro para corregir la orientacion
+                    #     self.setSpeed(0, w)
 
 
                     if targetFound:
@@ -270,7 +271,7 @@ class Robot:
 
                         # Avanzo hasta la pelota
                         # self.setSpeed(21/2, 0)
-                        self.setSpeed(((A-a) * 10) / 8000, 0 )
+                        self.setSpeed(((A-a) * 18.2) / 8000, 0)
                         time.sleep(2)
                         self.setSpeed(0, 0)
 
@@ -289,15 +290,15 @@ class Robot:
                     targetFound = False
                     break
 
+    # Bajar la cesta
     def catch(self):
-        # Bajar cesta
         speed = 135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
+    # Subir la cesta
     def uncatch(self):
-        # Subir cesta
         speed = -135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
