@@ -19,12 +19,12 @@ params.maxThreshold = 200
 
 # Filtro de aceptación del área de los blobs
 params.filterByArea = True
-params.minArea = 350
-params.maxArea = 20000
+params.minArea = 500
+params.maxArea = 200000
 
 # Filtro de aceptación de la circularidad (forma) de los blobs
 params.filterByCircularity = True
-params.minCircularity = 0.25
+params.minCircularity = 0.35
 
 # Desactivamos los filtros de color, convexidad e inercia
 params.filterByColor = False
@@ -40,7 +40,9 @@ else:
     detector = cv2.SimpleBlobDetector_create(params)
 
 # Para detectar solo color
-params.filterByCircularity = False 
+params.filterByCircularity = False
+params.minArea = 1000
+params.maxArea = 99999999
 
 if int(ver[0]) < 3:
     detector2 = cv2.SimpleBlobDetector(params)
@@ -48,12 +50,19 @@ else:
     detector2 = cv2.SimpleBlobDetector_create(params)
 
 cam = VideoCapture(0)
-cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 # cam = VideoCapture('http://192.168.7.172:8080/video')
+cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-# Función get_blob() ------------------------------------------------
-def get_red(show):
+
+def get_img():
     _, img = cam.read()
+    return img
+
+
+def get_red(show):
+
+    # Toma una foto
+    img = get_img()
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -65,31 +74,27 @@ def get_red(show):
     keypoints_red = detector2.detect(255-mask_red)
 
     if show:
-        red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
+        red = cv2.bitwise_and(img_hsv, img_hsv, mask=mask_red)
 
         # Dibujamos en la imagen los keypoints detectados
         im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
-        (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                                              (255, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
         cv2.imshow("Keypoints on RED", img_blob)
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
     if len(keypoints_red) > 0:
         return True
     else:
         return False
 
-def get_img():
-    _, img = cam.read()
-    return img
 
 def get_blob(show):
+
     # Toma una foto
     img = get_img()
-    # img = get_img() if img is None else img
-    # img = get_img() if img is None else img
-    
+
     # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)
     # cv2.waitKey(1)
@@ -108,11 +113,11 @@ def get_blob(show):
     # ELiminamos todos los pixeles de la imagen original que no contengan
     # ningun tono de rojo en la mascara (Solo para debug)
     if show:
-        red = cv2.bitwise_and(img_hsv, img_hsv, mask = mask_red)
+        red = cv2.bitwise_and(img_hsv, img_hsv, mask=mask_red)
 
         # Dibujamos en la imagen los keypoints detectados
         im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
-        (255,255,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+                                              (255, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
         cv2.imshow("Keypoints on RED", img_blob)
@@ -137,3 +142,6 @@ def get_blob(show):
 # media = tiempos / veces
 
 # print("MEDIA DE TIEMPOS: {}".format(media))
+
+while True:
+    blob = get_red(True)

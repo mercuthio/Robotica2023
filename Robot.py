@@ -11,6 +11,7 @@ import numpy as np
 import datetime
 import brickpi3
 from get_blob import get_blob
+from get_blob import get_red
 import cv2
 
 # tambien se podria utilizar el paquete de threading
@@ -188,6 +189,7 @@ class Robot:
 
     # Operación para perseguir y capturar la pelota.
     def trackObject(self, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
+        """Tracks the object until the robot can catch it"""
 
         finished = False
         targetFound = False
@@ -200,7 +202,7 @@ class Robot:
 
         # Mientras no termine el ejercicio de buscar la pelota
         while not finished:
-            
+
             # 1 - Busca la pelota girando sobre sí mismo
             while not targetFound:
 
@@ -209,7 +211,6 @@ class Robot:
 
                 # Si ha encontrado la pelota, sale del bucle
                 if (blob != -1):
-                    # self.setSpeed(0,0)
                     targetFound = True
                     break
 
@@ -221,30 +222,29 @@ class Robot:
 
             # 2 - Decido un v y un w para acercarme a la pelota
             while not targetPositionReached:
-                
+
                 x_anterior = blob[0]
 
                 # a es el área de la pelota que ha encontrado y d la distancia
                 # de la pelota en la imágen de donde debería estar.
                 # blob[1] = diametro, blob[0] = x
-                a = np.pi * (blob[1] / 2)**2
+                a = np.pi * (blob[1] / 2)**2  # type: ignore
                 d = blob[0] - target
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
 
-                v = np.clip((A-a) / 800, 0, 100) * 0.8
-                w = np.radians(np.clip(-d, -20, 20)) * 0.5
+                v = np.clip((A-a) / 1000, 0, 100)
+                w = np.radians(np.clip(-d / 10, -20, 20))
                 self.setSpeed(v, w)
+
+                print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
 
-                print("AREA:", A-a)
-                print("DIS:", d)
-
                 MARGEN_AREA = 5000
-                MARGEN_DISTANCIA = 75 #3
+                MARGEN_DISTANCIA = 75  # 3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
                 if np.abs(A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
@@ -260,17 +260,16 @@ class Robot:
                     #     d = blob[0] - target
                     #     w = np.radians(np.clip(-d, -20, 20)) * 0.2
                     #     print(d)
-                        
+
                     #     # Giro para corregir la orientacion
                     #     self.setSpeed(0, w)
 
-
                     if targetFound:
                         targetPositionReached = True
-                        finished = True
 
                         # Avanzo hasta la pelota
                         # self.setSpeed(21/2, 0)
+                        print("Seteando velocidad final", (A-a) * 18.2 / 8000)
                         self.setSpeed(((A-a) * 18.2) / 8000, 0)
                         time.sleep(2)
                         self.setSpeed(0, 0)
@@ -278,9 +277,29 @@ class Robot:
                         # Bajo la cesta
                         self.catch()
 
-                        # Espero y levanto la cesta
+                        # Espero un tiempo para comprobar
                         time.sleep(3)
-                        self.uncatch() # DEBUG
+
+                        # Se comprueba si se ha obtenido la pelota
+
+                        blob_red = get_red(False)
+                        blob_circle = get_blob(False)
+
+                        # Si ve rojo pero no círculo, la ha cogido
+                        if blob_red and not blob_circle:
+                            # Pelota conseguida
+                            finished = True
+                            print("Finalizado con éxito! Soltando pelota.")
+                            self.uncatch()
+                        # No ha atrapado la pelota
+                        else:
+                            targetPositionReached = False
+                            print("No he conseguido atrapar la pelota.")
+                            self.uncatch()
+                            # Marcha atrás para mejorar visión
+                            self.setSpeed(-25 / 2, 0)
+                            time.sleep(2)
+                            break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
@@ -292,6 +311,8 @@ class Robot:
 
     # Bajar la cesta
     def catch(self):
+        """Moves down the basket"""
+        print("Bajando cesta")
         speed = 135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
@@ -299,6 +320,8 @@ class Robot:
 
     # Subir la cesta
     def uncatch(self):
+        """Moves up the basket"""
+        print("Subiendo cesta")
         speed = -135
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)

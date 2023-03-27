@@ -28,7 +28,9 @@ def main(args):
         # At least COLOR, the rest are up to you, but always put a default value.
         # res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255],
         #                   targetSize=??, target??=??, ...)
-        res = robot.trackObject(149, 320, colorRangeMin=[
+        targetSize = 149
+        target = 320
+        res = robot.trackObject(targetSize, target, colorRangeMin=[
                                 0, 0, 0], colorRangeMax=[255, 255, 255])
         # robot.catch()
 
