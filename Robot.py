@@ -243,7 +243,7 @@ class Robot:
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
 
-                MARGEN_AREA = 1200
+                MARGEN_AREA = 600
                 MARGEN_DISTANCIA = 30  # 3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
@@ -269,7 +269,12 @@ class Robot:
 
                         # Avanzo hasta la pelota
                         # self.setSpeed(21/2, 0)
-                        v_fin = 9
+                        v_fin = 8.8
+                        
+
+                        if (A-a) <= 0:
+                            v_fin += (A-a) / 10000.0
+
                         print("Seteando velocidad final", v_fin)
                         self.setSpeed(v_fin, 0)
                         time.sleep(2)
@@ -283,32 +288,32 @@ class Robot:
 
                         # Se comprueba si se ha obtenido la pelota
 
-                        blob_red = get_red(False)
-                        blob_circle = get_blob(False)
+                        blob_red = get_red(True)
+                        # blob_circle = get_blob(False)
 
+                        print(blob_red)
                         # Si ve rojo pero no círculo, la ha cogido
-                        if blob_red and not blob_circle:
+                        if blob_red:
                             # Pelota conseguida
                             finished = True
                             print("Finalizado con éxito! Soltando pelota.")
                             self.uncatch()
+                            break
                         # No ha atrapado la pelota
                         else:
                             targetPositionReached = False
                             print("No he conseguido atrapar la pelota.")
                             self.uncatch()
-                            finished = True
-                            break
                             # Marcha atrás para mejorar visión
                             self.setSpeed(-25 / 2, 0)
                             time.sleep(2)
-                            break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
                 # self.setSpeed(0, 0)
                 blob = get_blob(False)
                 if (blob == -1):
+                    print("aaa")
                     targetFound = False
                     break
 
@@ -316,7 +321,7 @@ class Robot:
     def catch(self):
         """Moves down the basket"""
         print("Bajando cesta")
-        speed = 135
+        speed = 140
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
@@ -325,7 +330,7 @@ class Robot:
     def uncatch(self):
         """Moves up the basket"""
         print("Subiendo cesta")
-        speed = -135
+        speed = -140
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)

@@ -41,8 +41,6 @@ else:
 
 # Para detectar solo color
 params.filterByCircularity = False
-params.minArea = 1000
-params.maxArea = 99999999
 
 if int(ver[0]) < 3:
     detector2 = cv2.SimpleBlobDetector(params)
@@ -63,31 +61,38 @@ def get_red(show):
 
     # Toma una foto
     img = get_img()
+    img2 = get_img()
+    img3 = get_img()
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_hsv2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_hsv3 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
 
     # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
     mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
     mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
-    mask_red = cv2.bitwise_or(mask_red1, mask_red2)
+    mask_red_1 = cv2.bitwise_or(mask_red1, mask_red2)
 
-    keypoints_red = detector2.detect(255-mask_red)
+    mask_red1 = cv2.inRange(img_hsv2, redMin1, redMax1)
+    mask_red2 = cv2.inRange(img_hsv2, redMin2, redMax2)
+    mask_red_2 = cv2.bitwise_or(mask_red1, mask_red2)
+
+    mask_red1 = cv2.inRange(img_hsv3, redMin1, redMax1)
+    mask_red2 = cv2.inRange(img_hsv3, redMin2, redMax2)
+    mask_red_3 = cv2.bitwise_or(mask_red1, mask_red2)
+
+    # keypoints_red = detector2.detect(255-mask_red)
 
     if show:
-        red = cv2.bitwise_and(img_hsv, img_hsv, mask=mask_red)
-
-        # Dibujamos en la imagen los keypoints detectados
-        im_with_keypoints = cv2.drawKeypoints(red, keypoints_red, np.array([]),
-                                              (255, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-
-        img_blob = cv2.cvtColor(im_with_keypoints, cv2.COLOR_HSV2BGR)
-        cv2.imshow("Keypoints on RED", img_blob)
+        cv2.imshow('Mascara roja', mask_red_1)
         cv2.waitKey(1)
 
-    if len(keypoints_red) > 0:
+    if cv2.countNonZero(mask_red_1) > 15000 or cv2.countNonZero(mask_red_2) > 15000 or cv2.countNonZero(mask_red_3) > 15000:
         return True
     else:
         return False
+
 
 
 def get_blob(show):
@@ -135,11 +140,12 @@ def get_blob(show):
 # veces = 10000
 # for i in range(0, veces):
 #     # start = time.time()
-#     blob = get_blob(True)
-#     if blob != -1:
-#         print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
-#     else:
-#         print("No veo")
+#     blob = get_red(True)
+#     print(blob)
+    # if blob != -1:
+    #     print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
+    # else:
+    #     print("No veo")
     # end = time.time()
     # tiempos += end-start
 
