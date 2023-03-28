@@ -243,8 +243,8 @@ class Robot:
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
 
-                MARGEN_AREA = 5000
-                MARGEN_DISTANCIA = 75  # 3
+                MARGEN_AREA = 1000
+                MARGEN_DISTANCIA = 50  # 3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
                 if np.abs(A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
@@ -269,8 +269,8 @@ class Robot:
 
                         # Avanzo hasta la pelota
                         # self.setSpeed(21/2, 0)
-                        print("Seteando velocidad final", (A-a) * 18.2 / 8000)
-                        self.setSpeed(((A-a) * 18.2) / 8000, 0)
+                        print("Seteando velocidad final", (A-a) * 18 / 8000)
+                        self.setSpeed(((A-a) * 18) / 8000, 0)
                         time.sleep(2)
                         self.setSpeed(0, 0)
 
@@ -296,6 +296,8 @@ class Robot:
                             targetPositionReached = False
                             print("No he conseguido atrapar la pelota.")
                             self.uncatch()
+                            finished = True
+                            break
                             # Marcha atrás para mejorar visión
                             self.setSpeed(-25 / 2, 0)
                             time.sleep(2)
