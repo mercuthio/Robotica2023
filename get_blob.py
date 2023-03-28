@@ -19,8 +19,8 @@ params.maxThreshold = 200
 
 # Filtro de aceptación del área de los blobs
 params.filterByArea = True
-params.minArea = 500
-params.maxArea = 2000000
+params.minArea = 300
+params.maxArea = 200000
 
 # Filtro de aceptación de la circularidad (forma) de los blobs
 params.filterByCircularity = True
@@ -131,15 +131,15 @@ def get_blob(show):
         return -1
 
 
-tiempos = 0
-veces = 10000
-for i in range(0, veces):
-    # start = time.time()
-    blob = get_blob(False)
-    if blob != -1:
-        print(blob[1])
-    else:
-        print("No veo")
+# tiempos = 0
+# veces = 10000
+# for i in range(0, veces):
+#     # start = time.time()
+#     blob = get_blob(True)
+#     if blob != -1:
+#         print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
+#     else:
+#         print("No veo")
     # end = time.time()
     # tiempos += end-start
 

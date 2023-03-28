@@ -233,7 +233,7 @@ class Robot:
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
 
-                v = np.clip((A-a) / 1000, 0, 100)
+                v = np.clip((A-a) / 1000, 0, 120)
                 w = np.radians(np.clip(-d / 10, -20, 20))
                 self.setSpeed(v, w)
 
@@ -243,11 +243,11 @@ class Robot:
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
 
-                MARGEN_AREA = 1000
-                MARGEN_DISTANCIA = 50  # 3
+                MARGEN_AREA = 1200
+                MARGEN_DISTANCIA = 30  # 3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
-                if np.abs(A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
+                if (A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
                     # while np.abs(d) >= MARGEN_DISTANCIA:
                     #     # Revisa si sigue teniendo la pelota delante, si no la tiene
                     #     # volvemos a buscarla
@@ -269,8 +269,9 @@ class Robot:
 
                         # Avanzo hasta la pelota
                         # self.setSpeed(21/2, 0)
-                        print("Seteando velocidad final", (A-a) * 18 / 8000)
-                        self.setSpeed(((A-a) * 18) / 8000, 0)
+                        v_fin = 9
+                        print("Seteando velocidad final", v_fin)
+                        self.setSpeed(v_fin, 0)
                         time.sleep(2)
                         self.setSpeed(0, 0)
 
