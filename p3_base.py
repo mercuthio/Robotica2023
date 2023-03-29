@@ -19,38 +19,17 @@ def main(args):
         robot = Robot()
 
         # 1. launch updateOdometry thread()
-        # robot.startOdometry()
+        robot.startOdometry()
 
-        # 2. Loop running the tracking until ??, then catch the ball
-        # TO-DO: ADD to the Robot class a method to track an object, given certain parameters
-        # for example the different target properties we want (size, position, color, ..)
-        # or a boolean to indicate if we want the robot to catch the object or not
-        # At least COLOR, the rest are up to you, but always put a default value.
-        # res = robot.trackObject(colorRangeMin=[0,0,0], colorRangeMax=[255,255,255],
-        #                   targetSize=??, target??=??, ...)
+        # 2. Loop running the tracking until reaching the ball, then catch the ball
         targetSize = 170
         target = 320
         res = robot.trackObject(targetSize, target, colorRangeMin=[
                                 0, 0, 0], colorRangeMax=[255, 255, 255])
-        # robot.catch()
 
-        # if res:
-        #   robot.catch
-
-        # Compruebo si hay rojo
-        # Si no lo hay
-        #   Buscar la pelota
-        # Si lo hay
-        #   Compruebo si hay circulo rojo
-        #   Si no lo hay
-        #       OK
-        #   Si lo hay
-        #       Buscar la pelota
-
-        # 3. wrap up and close stuff ...
         # This currently unconfigure the sensors, disable the motors,
         # and restore the LED to the control of the BrickPi3 firmware.
-        # robot.stopOdometry()
+        robot.stopOdometry()
 
     except KeyboardInterrupt:
         # except the program gets interrupted by Ctrl+C on the keyboard.

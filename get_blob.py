@@ -61,26 +61,25 @@ def get_red(show):
 
     # Toma una foto
     img = get_img()
-    img2 = get_img()
-    img3 = get_img()
+    # img2 = get_img()
+    # img3 = get_img()
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_hsv2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_hsv3 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
+    # img_hsv2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    # img_hsv3 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
     mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
     mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
     mask_red_1 = cv2.bitwise_or(mask_red1, mask_red2)
 
-    mask_red1 = cv2.inRange(img_hsv2, redMin1, redMax1)
-    mask_red2 = cv2.inRange(img_hsv2, redMin2, redMax2)
-    mask_red_2 = cv2.bitwise_or(mask_red1, mask_red2)
+    # mask_red1 = cv2.inRange(img_hsv2, redMin1, redMax1)
+    # mask_red2 = cv2.inRange(img_hsv2, redMin2, redMax2)
+    # mask_red_2 = cv2.bitwise_or(mask_red1, mask_red2)
 
-    mask_red1 = cv2.inRange(img_hsv3, redMin1, redMax1)
-    mask_red2 = cv2.inRange(img_hsv3, redMin2, redMax2)
-    mask_red_3 = cv2.bitwise_or(mask_red1, mask_red2)
+    # mask_red1 = cv2.inRange(img_hsv3, redMin1, redMax1)
+    # mask_red2 = cv2.inRange(img_hsv3, redMin2, redMax2)
+    # mask_red_3 = cv2.bitwise_or(mask_red1, mask_red2)
 
     # keypoints_red = detector2.detect(255-mask_red)
 
@@ -88,11 +87,10 @@ def get_red(show):
         cv2.imshow('Mascara roja', mask_red_1)
         cv2.waitKey(1)
 
-    if cv2.countNonZero(mask_red_1) > 15000 or cv2.countNonZero(mask_red_2) > 15000 or cv2.countNonZero(mask_red_3) > 15000:
+    if cv2.countNonZero(mask_red_1) > (img.shape[0] * img.shape[1]) / 10:
         return True
     else:
         return False
-
 
 
 def get_blob(show):
@@ -137,19 +135,18 @@ def get_blob(show):
 
 
 # tiempos = 0
-# veces = 10000
+# veces = 100
 # for i in range(0, veces):
 #     # start = time.time()
-#     blob = get_red(True)
+#     blob = get_blob(True)
 #     print(blob)
-    # if blob != -1:
-    #     print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
-    # else:
-    #     print("No veo")
-    # end = time.time()
-    # tiempos += end-start
+# if blob != -1:
+#     print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
+# else:
+#     print("No veo")
+# end = time.time()
+# tiempos += end-start
 
 # media = tiempos / veces
 
 # print("MEDIA DE TIEMPOS: {}".format(media))
-    

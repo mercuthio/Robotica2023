@@ -97,10 +97,8 @@ class Robot:
     def startOdometry(self):
         """ This starts a new process/thread that will be updating the odometry periodically """
         self.finished.value = False
-        # additional_params?))
         self.p = Process(target=self.updateOdometry, args=())
         self.p.start()
-        print("PID: ", self.p.pid)
 
     # You may want to pass additional shared variables besides the odometry values and stop flag
     def updateOdometry(self):  # , additional_params?):
@@ -132,11 +130,6 @@ class Robot:
             Ax = As * np.cos(self.th.value + Ath / 2)
             Ay = As * np.sin(self.th.value + Ath / 2)
 
-            ######## UPDATE FROM HERE with your code (following the suggested scheme) ########
-            # sys.stdout.write("Dummy update of odometry ...., X=  %d, \
-            #     Y=  %d, th=  %d \n" %(self.x.value, self.y.value, self.th.value) )
-            # print("Dummy update of odometry ...., X=  %.2f" %(self.x.value) )
-
             # Bloqueamos mutex de la odometría.
             self.lock_odometry.acquire()
 
@@ -153,24 +146,9 @@ class Robot:
             # save LOG
             # print("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime("%Hh-%Mm-%Ss.txt"),
             #   round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
-            self.log_file.write("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
+            self.log_file.write("[{}] X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
                 "%Hh-%Mm-%Ss"), round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
             self.log_file.flush()
-
-            # try:
-            # Each of the following BP.get_motor_encoder functions returns the encoder value
-            # (what we want to store).
-            # sys.stdout.write("Reading encoder values .... \n")
-            # [encoder1, encoder2] = [self.BP.get_motor_encoder(self.BP.PORT_B),
-            #    self.BP.get_motor_encoder(self.BP.PORT_C)]
-            # except IOError as error:
-            # print(error)
-            # sys.stdout.write(error)
-
-            # sys.stdout.write("Encoder (%s) increased (in degrees) B: %6d  C: %6d " %
-            #        (type(encoder1), encoder1, encoder2))
-
-            ######## UPDATE UNTIL HERE with your code ########
 
             tEnd = time.clock()
             time.sleep(self.P - (tEnd-tIni))
@@ -248,29 +226,13 @@ class Robot:
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
                 if (A-a) <= MARGEN_AREA and np.abs(d) <= MARGEN_DISTANCIA:
-                    # while np.abs(d) >= MARGEN_DISTANCIA:
-                    #     # Revisa si sigue teniendo la pelota delante, si no la tiene
-                    #     # volvemos a buscarla
-                    #     blob = get_blob(False)
-                    #     if (blob == -1):
-                    #         targetFound = False
-                    #         break
 
-                    #     # Calculo cuanto tengo que corregir la orientacion
-                    #     d = blob[0] - target
-                    #     w = np.radians(np.clip(-d, -20, 20)) * 0.2
-                    #     print(d)
-
-                    #     # Giro para corregir la orientacion
-                    #     self.setSpeed(0, w)
-
+                    # Si sigo viendo la pelota
                     if targetFound:
                         targetPositionReached = True
 
                         # Avanzo hasta la pelota
-                        # self.setSpeed(21/2, 0)
                         v_fin = 8.8
-                        
 
                         if (A-a) <= 0:
                             v_fin += (A-a) / 10000.0
@@ -284,15 +246,13 @@ class Robot:
                         self.catch()
 
                         # Espero un tiempo para comprobar
-                        time.sleep(3)
+                        time.sleep(1)
 
                         # Se comprueba si se ha obtenido la pelota
 
                         blob_red = get_red(True)
-                        # blob_circle = get_blob(False)
 
-                        print(blob_red)
-                        # Si ve rojo pero no círculo, la ha cogido
+                        # Si ve bastante rojo, la ha cogido
                         if blob_red:
                             # Pelota conseguida
                             finished = True
@@ -304,16 +264,16 @@ class Robot:
                             targetPositionReached = False
                             print("No he conseguido atrapar la pelota.")
                             self.uncatch()
+
                             # Marcha atrás para mejorar visión
                             self.setSpeed(-25 / 2, 0)
                             time.sleep(2)
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
-                # self.setSpeed(0, 0)
+
                 blob = get_blob(False)
                 if (blob == -1):
-                    print("aaa")
                     targetFound = False
                     break
 
