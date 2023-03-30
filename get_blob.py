@@ -65,23 +65,11 @@ def get_red(show):
     img = get_img() if img is None else img
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    # img_hsv2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    # img_hsv3 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
     mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
     mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
     mask_red_1 = cv2.bitwise_or(mask_red1, mask_red2)
-
-    # mask_red1 = cv2.inRange(img_hsv2, redMin1, redMax1)
-    # mask_red2 = cv2.inRange(img_hsv2, redMin2, redMax2)
-    # mask_red_2 = cv2.bitwise_or(mask_red1, mask_red2)
-
-    # mask_red1 = cv2.inRange(img_hsv3, redMin1, redMax1)
-    # mask_red2 = cv2.inRange(img_hsv3, redMin2, redMax2)
-    # mask_red_3 = cv2.bitwise_or(mask_red1, mask_red2)
-
-    # keypoints_red = detector2.detect(255-mask_red)
 
     if show:
         cv2.imshow('Mascara roja', mask_red_1)
@@ -134,21 +122,3 @@ def get_blob(show):
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
     else:
         return -1
-
-
-# tiempos = 0
-# veces = 100
-# for i in range(0, veces):
-#     # start = time.time()
-#     blob = get_blob(True)
-#     print(blob)
-# if blob != -1:
-#     print(blob[1], "AREA: ", np.pi * (blob[1]/2) **2)
-# else:
-#     print("No veo")
-# end = time.time()
-# tiempos += end-start
-
-# media = tiempos / veces
-
-# print("MEDIA DE TIEMPOS: {}".format(media))

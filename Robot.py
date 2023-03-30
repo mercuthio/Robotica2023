@@ -291,8 +291,6 @@ class Robot:
                                 targetPositionReached = True
                                 targetFound = False
                                 # Marcha atrás para mejorar visión
-                                # self.setSpeed(-30 / 2, 0)
-                                # time.sleep(2)
                                 blob = get_blob(False)
 
                             self.setSpeed(0, np.radians(90))
