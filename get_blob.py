@@ -20,15 +20,15 @@ params.maxThreshold = 200
 # Filtro de aceptación del área de los blobs
 params.filterByArea = True
 params.minArea = 300
-params.maxArea = 200000
+params.maxArea = 99999999999
 
 # Filtro de aceptación de la circularidad (forma) de los blobs
 params.filterByCircularity = True
 params.minCircularity = 0.35
 
 # Desactivamos los filtros de color, convexidad e inercia
-params.filterByColor = False
-# params.blobColor = 0
+params.filterByColor = True
+params.blobColor = 255
 params.filterByConvexity = False
 params.filterByInertia = False
 
@@ -97,6 +97,8 @@ def get_blob(show):
 
     # Toma una foto
     img = get_img()
+    img = get_img() if img is None else img
+    img = get_img() if img is None else img
 
     # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)
@@ -111,7 +113,7 @@ def get_blob(show):
     mask_red = cv2.bitwise_or(mask_red1, mask_red2)
 
     # Detectamos los blobs en la imagen
-    keypoints_red = detector.detect(255-mask_red)
+    keypoints_red = detector.detect(mask_red)
 
     # ELiminamos todos los pixeles de la imagen original que no contengan
     # ningun tono de rojo en la mascara (Solo para debug)

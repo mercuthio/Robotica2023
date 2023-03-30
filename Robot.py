@@ -175,8 +175,10 @@ class Robot:
 
         # A es el área que debe tener la pelota cuando el robot la tenga delante
         # para cogerla
-        A = np.pi * (targetSize / 2)**2
+        A = targetSize
         x_anterior = 0
+
+        old_a = 0
 
         # Mientras no termine el ejercicio de buscar la pelota
         while not finished:
@@ -190,6 +192,8 @@ class Robot:
                 # Si ha encontrado la pelota, sale del bucle
                 if (blob != -1):
                     targetFound = True
+                    targetPositionReached = False
+                    old_a = blob[1]
                     break
 
                 # Si no ha encontrado la pelota da vueltas
@@ -206,13 +210,27 @@ class Robot:
                 # a es el área de la pelota que ha encontrado y d la distancia
                 # de la pelota en la imágen de donde debería estar.
                 # blob[1] = diametro, blob[0] = x
-                a = np.pi * (blob[1] / 2)**2  # type: ignore
+                a = blob[1] # type: ignore
                 d = blob[0] - target
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
 
-                v = np.clip((A-a) / 1000, 0, 120)
-                w = np.radians(np.clip(-d / 10, -20, 20))
+                # Miramos si el getblob se ha rallado y ha dado un tiron
+                if np.abs(old_a - a) > 30:
+                    a = old_a
+                    v = -10
+                    w = 0
+                    print("Se me fue la olla, lo siento.")
+                    print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
+                    self.setSpeed(v, w)
+                    targetFound = False
+                    targetPositionReached = False
+                    break
+                else:
+                    old_a = a
+                    v = np.clip((A-a) / 10, -10, 30)
+                    w = np.radians(np.clip(-d / 10, -20, 20))
+                
                 self.setSpeed(v, w)
 
                 print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
@@ -221,7 +239,7 @@ class Robot:
                 # pequeña, paramos y cogemos la pelota
                 # Medir valores con pelota en posicion correcta
 
-                MARGEN_AREA = 600
+                MARGEN_AREA = 50
                 MARGEN_DISTANCIA = 30  # 3
 
                 # Comprobamos si tenemos ya la pelota delante nuestro
@@ -232,7 +250,7 @@ class Robot:
                         targetPositionReached = True
 
                         # Avanzo hasta la pelota
-                        v_fin = 8.8
+                        v_fin = 5.5
 
                         if (A-a) <= 0:
                             v_fin += (A-a) / 10000.0
@@ -261,17 +279,19 @@ class Robot:
                             break
                         # No ha atrapado la pelota
                         else:
-                            targetPositionReached = False
                             print("No he conseguido atrapar la pelota.")
+                            
+                            targetPositionReached = True
+                            targetFound = False
                             self.uncatch()
-
                             # Marcha atrás para mejorar visión
-                            self.setSpeed(-25 / 2, 0)
+                            self.setSpeed(-30 / 2, 0)
                             time.sleep(2)
+                            blob = get_blob(False)
+                            break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
-
                 blob = get_blob(False)
                 if (blob == -1):
                     targetFound = False

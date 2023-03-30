@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 # Read image
-img_BGR = cv2.imread("red_blue.jpg")
+img_BGR = cv2.imread("bola.jpg")
 # img_BGR = cv2.imread("many.jpg")
 
 # Setup default values for SimpleBlobDetector parameters.
@@ -20,7 +20,7 @@ params.maxThreshold = 200
 # Filter by Area
 params.filterByArea = True
 params.minArea = 200
-params.maxArea = 10000
+params.maxArea = 10000000000
 
 # Filter by Circularity
 params.filterByCircularity = True
@@ -29,7 +29,7 @@ params.minCircularity = 0.1
 # Filter by Color
 params.filterByColor = False
 # not directly color, but intensity on the channel input
-# params.blobColor = 0
+params.blobColor = 255
 params.filterByConvexity = False
 params.filterByInertia = False
 
@@ -59,27 +59,21 @@ cv2.waitKey(0)
 #  similar for BLUE
 
 # BY DEFAULT, opencv IMAGES have BGR format
-redMin = (10, 10, 100)
-redMax = (50, 50, 255)
 
-blueMin = (60, 10, 10)
-blueMax = (255, 100, 100)
+redMin1 = np.array([0, 100, 100])
+redMax1 = np.array([3, 255, 255])
 
-mask_red = cv2.inRange(img_BGR, redMin, redMax)
-mask_blue = cv2.inRange(img_BGR, blueMin, blueMax)
+redMin2 = np.array([170, 100, 100])
+redMax2 = np.array([180, 255, 255])
 
+img_hsv = cv2.cvtColor(img_BGR, cv2.COLOR_BGR2HSV)
 
-# apply the mask
-red = cv2.bitwise_and(img_BGR, img_BGR, mask=mask_red)
-blue = cv2.bitwise_and(img_BGR, img_BGR, mask=mask_blue)
-# show resulting filtered image next to the original one
-cv2.imshow("Red regions", np.hstack([img_BGR, red]))
-cv2.imshow("Blue regions", np.hstack([img_BGR, blue]))
+# Definimos la mascara final como la suma de las dos anteriores aplicadas a la imagen
+mask_red1 = cv2.inRange(img_hsv, redMin1, redMax1)
+mask_red2 = cv2.inRange(img_hsv, redMin2, redMax2)
+mask_red = cv2.bitwise_or(mask_red1, mask_red2)
 
-
-# detector finds "dark" blobs by default, so invert image for results with same detector
-keypoints_red = detector.detect(255-mask_red)
-keypoints_blue = detector.detect(255-mask_blue)
+keypoints_red = detector.detect(mask_red)
 
 # documentation of SimpleBlobDetector is not clear on what kp.size is exactly, but it looks like the diameter of the blob.
 for kp in keypoints_red:
@@ -88,12 +82,9 @@ for kp in keypoints_red:
 # Draw detected blobs as red circles.
 # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures
 # the size of the circle corresponds to the size of blob
-im_with_keypoints = cv2.drawKeypoints(img_BGR, keypoints_red, np.array([]),
+im_with_keypoints = cv2.drawKeypoints(mask_red1, keypoints_red, np.array([]),
                                       (255, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-im_with_keypoints2 = cv2.drawKeypoints(img_BGR, keypoints_blue, np.array([]),
-                                       (255, 255, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
 # Show mask and blobs found
 cv2.imshow("Keypoints on RED", im_with_keypoints)
-cv2.imshow("Keypoints on BLUE", im_with_keypoints2)
 cv2.waitKey(0)
