@@ -220,7 +220,7 @@ class Robot:
                     a = old_a
                     v = -10
                     w = 0
-                    print("Se me fue la olla, lo siento.")
+                    print("Posición errónea, recalculando...")
                     print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
                     self.setSpeed(v, w)
                     targetFound = False
