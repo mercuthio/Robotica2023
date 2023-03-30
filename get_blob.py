@@ -87,8 +87,7 @@ def get_red(show):
         cv2.imshow('Mascara roja', mask_red_1)
         cv2.waitKey(1)
 
-    if cv2.countNonZero(mask_red_1) > 30000:
-        print(cv2.countNonZero(mask_red_1) )
+    if cv2.countNonZero(mask_red_1) > 12000:
         return True
     else:
         return False
@@ -135,6 +134,7 @@ def get_blob(show):
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
     else:
         return -1
+    
 
 # tiempos = 0
 # veces = 100

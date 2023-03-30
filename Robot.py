@@ -269,25 +269,38 @@ class Robot:
                         # Se comprueba si se ha obtenido la pelota
 
                         blob_red = get_red(False)
+                        blob_red = get_red(False)
 
-                        # Si ve bastante rojo, la ha cogido
                         if blob_red:
-                            # Pelota conseguida
-                            finished = True
-                            print("Finalizado con éxito! Soltando pelota.")
+                            self.setSpeed(0, np.radians(-90))
+                            time.sleep(1)
+                            self.setSpeed(0,0)
+
+                            blob_red = get_red(False)
+                            blob_red = get_red(False)
+
+                            # Si ve bastante rojo, la ha cogido
+                            if blob_red:
+                                # Pelota conseguida
+                                finished = True
+                                print("Finalizado con éxito! Soltando pelota.")
+                            # No ha atrapado la pelota
+                            else:
+                                print("No he conseguido atrapar la pelota.")
+                                
+                                targetPositionReached = True
+                                targetFound = False
+                                # Marcha atrás para mejorar visión
+                                # self.setSpeed(-30 / 2, 0)
+                                # time.sleep(2)
+                                blob = get_blob(False)
+
+                    
+                            self.setSpeed(0, np.radians(90))
+                            time.sleep(1)
+                            self.setSpeed(0,0)
+                            time.sleep(3)
                             self.uncatch()
-                            break
-                        # No ha atrapado la pelota
-                        else:
-                            print("No he conseguido atrapar la pelota.")
-                            
-                            targetPositionReached = True
-                            targetFound = False
-                            self.uncatch()
-                            # Marcha atrás para mejorar visión
-                            self.setSpeed(-30 / 2, 0)
-                            time.sleep(2)
-                            blob = get_blob(False)
                             break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
