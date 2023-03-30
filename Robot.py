@@ -268,7 +268,8 @@ class Robot:
 
                         # Se comprueba si se ha obtenido la pelota
 
-                        blob_red = get_red(True)
+                        blob_red = get_red(False)
+                        time.sleep(5)
 
                         # Si ve bastante rojo, la ha cogido
                         if blob_red:

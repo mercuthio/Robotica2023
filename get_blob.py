@@ -61,8 +61,8 @@ def get_red(show):
 
     # Toma una foto
     img = get_img()
-    # img2 = get_img()
-    # img3 = get_img()
+    img = get_img() if img is None else img
+    img = get_img() if img is None else img
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # img_hsv2 = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -87,7 +87,8 @@ def get_red(show):
         cv2.imshow('Mascara roja', mask_red_1)
         cv2.waitKey(1)
 
-    if cv2.countNonZero(mask_red_1) > (img.shape[0] * img.shape[1]) / 10:
+    if cv2.countNonZero(mask_red_1) > 30000:
+        print(cv2.countNonZero(mask_red_1) )
         return True
     else:
         return False
@@ -134,7 +135,6 @@ def get_blob(show):
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
     else:
         return -1
-
 
 # tiempos = 0
 # veces = 100
