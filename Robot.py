@@ -210,7 +210,7 @@ class Robot:
                 # a es el área de la pelota que ha encontrado y d la distancia
                 # de la pelota en la imágen de donde debería estar.
                 # blob[1] = diametro, blob[0] = x
-                a = blob[1] # type: ignore
+                a = blob[1]  # type: ignore
                 d = blob[0] - target
                 # Sacamos una velocidad lineal y angular en función de la
                 # distancia y el área de la pelota para perseguirla.
@@ -230,7 +230,7 @@ class Robot:
                     old_a = a
                     v = np.clip((A-a) / 10, -10, 30)
                     w = np.radians(np.clip(-d / 10, -20, 20))
-                
+
                 self.setSpeed(v, w)
 
                 print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
@@ -274,7 +274,7 @@ class Robot:
                         if blob_red:
                             self.setSpeed(0, np.radians(-90))
                             time.sleep(1)
-                            self.setSpeed(0,0)
+                            self.setSpeed(0, 0)
 
                             blob_red = get_red(False)
                             blob_red = get_red(False)
@@ -287,7 +287,7 @@ class Robot:
                             # No ha atrapado la pelota
                             else:
                                 print("No he conseguido atrapar la pelota.")
-                                
+
                                 targetPositionReached = True
                                 targetFound = False
                                 # Marcha atrás para mejorar visión
@@ -295,10 +295,9 @@ class Robot:
                                 # time.sleep(2)
                                 blob = get_blob(False)
 
-                    
                             self.setSpeed(0, np.radians(90))
                             time.sleep(1)
-                            self.setSpeed(0,0)
+                            self.setSpeed(0, 0)
                             time.sleep(3)
                             self.uncatch()
                             break

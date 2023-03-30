@@ -134,7 +134,7 @@ def get_blob(show):
         return [keypoints_red[0].pt[0],  keypoints_red[0].size]
     else:
         return -1
-    
+
 
 # tiempos = 0
 # veces = 100
