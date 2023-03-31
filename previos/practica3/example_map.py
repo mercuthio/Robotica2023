@@ -28,7 +28,7 @@ def main(args):
             print('Map file %s does not exist' % args.mapfile)
             exit(1)
 
-        map_file = args.mapfile;
+        map_file = args.mapfile
         # Instantiate Odometry with your own files from P2/P3
         # robot = Robot()
         # ...

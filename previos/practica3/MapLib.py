@@ -391,21 +391,52 @@ class Map2D:
     # METHODS to IMPLEMENT in P4
     # ############################################################
 
+    def _max_cells(self):
+        matrix = self.costMatrix
+        max_val = float('-inf')
+        max_cells = []
+        for i in range(len(matrix)):
+            for j in range(len(matrix[0])):
+                if matrix[i][j] > max_val:
+                    max_val = matrix[i][j]
+                    max_cells = [(i - len(matrix[0]) + 1,j)]
+                elif matrix[i][j] == max_val:
+                    max_cells.append((i - len(matrix[0]) + 1,j))
+        return max_cells
+
+    def _getFrontierNodes(self):
+        max_nodes = self._max_cells()
+
+        frontier = []
+        neigh2position = {0:(0, 1), 2:(1, 0), 4:(0, -1), 6:(-1, 0)}
+        # Busco en la matriz todas las celdas que tengan el valor maximo
+        for node in max_nodes:
+            for i in [0, 2, 4, 6]:
+                if self.isConnected(node[0], node[1], i):
+                    frontier.append([node[0] + neigh2position[i][0], node[1] + neigh2position[i][1]])
+
+        return frontier
+        
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
-        puntos_visitados = []
-        puntos_visitados.append([x_ini, y_ini])
 
         valor_frontera = 1
+        self.costMatrix[x_end, y_end] = 0
+        
+        frontera = self._getFrontierNodes()
 
-        while True:
-            frontera = self.getFrontierNodes(puntos_visitados)
-
-            if len(frontera) == 0:
-                break
-            
+        while np.size(frontera) != 0:
+            print(frontera)
             for punto in frontera:
-                self.costMatrix[punto[0], punto[1]] = valor_frontera
-                valor_frontera += 1
+                print(punto[0], punto[1])
+                print(self.costMatrix)
+                print(punto[1], self.sizeY - punto[0] - 1)
+                self.costMatrix[self.sizeY - punto[1] -1,  punto[0]] = valor_frontera
+                print(self.costMatrix)
+            
+            valor_frontera += 1
+            frontera = self._getFrontierNodes()
+
+        # print(self.costMatrix)
 
 
     def findPath(self, x_ini,  y_ini, x_end, y_end):
