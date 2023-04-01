@@ -391,93 +391,116 @@ class Map2D:
     # METHODS to IMPLEMENT in P4
     # ############################################################
 
-    def _max_cells(self):
-        matrix = self.costMatrix
-        max_val = float('-inf')
-        max_cells = []
-        for i in range(len(matrix)):
-            for j in range(len(matrix[0])):
-                if matrix[i][j] > max_val:
-                    max_val = matrix[i][j]
-                    max_cells = [(i - len(matrix[0]) + 1,j)]
-                elif matrix[i][j] == max_val:
-                    max_cells.append((i - len(matrix[0]) + 1,j))
-        return max_cells
+    def _toMapCoord(self, x_cell, y_cell):
+        return [y_cell, self.sizeX - 1 - x_cell]
+    
+    def _toMatrixCoord(self, x_cell, y_cell):
+        return [self.sizeX - y_cell - 1, x_cell]
+
+    # FILLCOSTMATRIX -------------------------------------------------------------------------------
 
     def _getFrontierNodes(self):
-        max_nodes = self._max_cells()
-
         frontier = []
         neigh2position = {0:(0, 1), 2:(1, 0), 4:(0, -1), 6:(-1, 0)}
+
+        # Obtenemos los índices de las posiciones con mayor valor de la matriz de coste
+        max_nodes = np.argwhere(self.costMatrix == np.max(self.costMatrix))
+
         # Busco en la matriz todas las celdas que tengan el valor maximo
         for node in max_nodes:
+            node = self._toMapCoord(node[0], node[1])
+            # 4 vecindad
             for i in [0, 2, 4, 6]:
                 if self.isConnected(node[0], node[1], i):
-                    frontier.append([node[0] + neigh2position[i][0], node[1] + neigh2position[i][1]])
+                    cell = np.add(node, neigh2position[i])
+                    cell_mat = self._toMatrixCoord(cell[0], cell[1])
+                    # Si el nodo no esta visitado
+                    if self.costMatrix[cell_mat[0], cell_mat[1]] < 0:
+                        frontier.append(cell)
 
         return frontier
         
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
 
+        goal = self._toMatrixCoord(x_end, y_end)
+        start = self._toMatrixCoord(x_ini, y_ini)
+        self.costMatrix[goal[0], goal[1]] = 0
+
         valor_frontera = 1
-        self.costMatrix[x_end, y_end] = 0
-        
         frontera = self._getFrontierNodes()
 
-        while np.size(frontera) != 0:
-            print(frontera)
+        while self.costMatrix[start[0], start[1]] == -2:
             for punto in frontera:
-                print(punto[0], punto[1])
-                print(self.costMatrix)
-                print(punto[1], self.sizeY - punto[0] - 1)
-                self.costMatrix[self.sizeY - punto[1] -1,  punto[0]] = valor_frontera
-                print(self.costMatrix)
-            
+                punto = self._toMatrixCoord(punto[0], punto[1])
+                self.costMatrix[punto[0], punto[1]] = valor_frontera
+
             valor_frontera += 1
             frontera = self._getFrontierNodes()
 
-        # print(self.costMatrix)
+    # FINDPATH -------------------------------------------------------------------------------
 
+    def _getNeighBors(self, x_actual, y_actual):
+        neighbors = []
+        neigh2position = {0:(0, 1), 2:(1, 0), 4:(0, -1), 6:(-1, 0)}
+
+        # 8 vecindad
+        for i in range(0, 7):
+            if self.isConnected(x_actual, y_actual, i):
+                neighbors.append(np.add([x_actual, y_actual], neigh2position[i]))
+
+        return neighbors
+
+    def _getBestNode(self, neighbors):
+        min = float('inf')
+        best_celda = [-1,-1]
+        for n in neighbors:
+            n_mat = self._toMatrixCoord(n[0], n[1])
+            if self.costMatrix[n_mat[0], n_mat[1]] < min:
+                min = self.costMatrix[n_mat[0], n_mat[1]]
+                best_celda = n
+        return best_celda
 
     def findPath(self, x_ini,  y_ini, x_end, y_end):
-        
-        # num_steps = self.costMatrix[x_end, y_end]        
-        # self.currentPath = np.array( [ [0,0] ] * num_steps )
-        
-        self.currentPath = np.array( [] )
 
-        nodo_inicial = [x_ini, y_ini]
-        nodo_final = [x_end, y_end]
+        num_steps = int(self.costMatrix[x_end, y_end])      
+        self.currentPath = np.array( [ [x_ini,y_ini] ] * num_steps )
 
-        nodo_actual = nodo_inicial
+        nodo_actual = [x_ini, y_ini]
 
-        while nodo_actual != nodo_final:
-            nodos_adyacentes = self.getAdjacentNodes(nodo_actual)
+        step = 1
+
+        for step in range(1, num_steps):
+            nodos_adyacentes = self._getNeighBors(nodo_actual[0], nodo_actual[1])
             if len(nodos_adyacentes) == 0:
                 return False
-
-            siguiente_nodo = self.getBestNode(nodos_adyacentes) # pillar el nodo con menor coste
+            # obtenemos el menor vecino
+            siguiente_nodo = self._getBestNode(nodos_adyacentes) 
 
             nodo_actual = siguiente_nodo
-            self.currentPath.append(nodo_actual)      
+            self.currentPath[step] = nodo_actual
+            step += 1
 
         return True
 
+    # REPLANPATH -------------------------------------------------------------------------------
 
     # El mapa ya está actualizado cuando llamamos a replanPath
     def replanPath(self, x_ini,  y_ini, x_end, y_end):
         self.fillCostMatrix(x_ini,  y_ini, x_end, y_end)
         self.findPath(x_end, y_end)
 
+    # DETECTOBSTACLE -------------------------------------------------------------------------------
+
     # Devuelve los nodos adyacentes a un nodo que son obstaculos
     def detectObstacle(self, x_actual, y_actual):
 
         distancia = leer_sonar()
         if distancia != -1:
-            posicion_obstaculo = [self.x + distancia, self.y]
-            celda = self._pos2cell(posicion_obstaculo)
-            anyadirObstaculo(celda)
+            celda_actual = self._pos2cell(x_actual, y_actual)
+            # Ponemos un muro delante de nuestra posicion actual
+            self.deleteConnection(celda_actual[0], celda_actual[1], 0)
 
+    # GO -------------------------------------------------------------------------------
 
     def go(self, x_goal, y_goal):
         posicion_actual = self._pos2cell([self.x, self.y])
