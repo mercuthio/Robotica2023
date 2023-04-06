@@ -408,12 +408,12 @@ class Map2D:
 
         # Busco en la matriz todas las celdas que tengan el valor maximo
         for node in max_nodes:
-            node = self._toMapCoord(node[0], node[1])
+            node = [node[0], node[1]]
             # 4 vecindad
             for i in [0, 2, 4, 6]:
                 if self.isConnected(node[0], node[1], i):
                     cell = np.add(node, neigh2position[i])
-                    cell_mat = self._toMatrixCoord(cell[0], cell[1])
+                    cell_mat = [cell[0], cell[1]]
                     # Si el nodo no esta visitado
                     if self.costMatrix[cell_mat[0], cell_mat[1]] < 0:
                         frontier.append(cell)
@@ -422,8 +422,8 @@ class Map2D:
         
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
 
-        goal = self._toMatrixCoord(x_end, y_end)
-        start = self._toMatrixCoord(x_ini, y_ini)
+        goal = [x_end, y_end]
+        start = [x_ini, y_ini]
         self.costMatrix[goal[0], goal[1]] = 0
 
         valor_frontera = 1
@@ -431,7 +431,7 @@ class Map2D:
 
         while self.costMatrix[start[0], start[1]] == -2:
             for punto in frontera:
-                punto = self._toMatrixCoord(punto[0], punto[1])
+                punto = [punto[0], punto[1]]
                 self.costMatrix[punto[0], punto[1]] = valor_frontera
 
             valor_frontera += 1
@@ -444,32 +444,31 @@ class Map2D:
         neigh2position = {0:(0, 1), 2:(1, 0), 4:(0, -1), 6:(-1, 0)}
 
         # 8 vecindad
-        for i in range(0, 7):
+        for i in range(0, 8):
             if self.isConnected(x_actual, y_actual, i):
                 neighbors.append(np.add([x_actual, y_actual], neigh2position[i]))
-
         return neighbors
 
     def _getBestNode(self, neighbors):
         min = float('inf')
         best_celda = [-1,-1]
         for n in neighbors:
-            n_mat = self._toMatrixCoord(n[0], n[1])
+            n_mat = [n[0], n[1]]
             if self.costMatrix[n_mat[0], n_mat[1]] < min:
                 min = self.costMatrix[n_mat[0], n_mat[1]]
                 best_celda = n
         return best_celda
 
-    def findPath(self, x_ini,  y_ini, x_end, y_end):
+    def planPath(self, x_ini,  y_ini, x_end, y_end):
 
-        num_steps = int(self.costMatrix[x_end, y_end])      
-        self.currentPath = np.array( [ [x_ini,y_ini] ] * num_steps )
+        num_steps = int(self.costMatrix[x_ini, y_ini])
+        self.currentPath = np.array( [None] * num_steps )
 
-        nodo_actual = [x_ini, y_ini]
+        nodo_actual = [x_ini,y_ini]
 
-        step = 1
+        step = 0
 
-        for step in range(1, num_steps):
+        for step in range(0, num_steps):
             nodos_adyacentes = self._getNeighBors(nodo_actual[0], nodo_actual[1])
             if len(nodos_adyacentes) == 0:
                 return False
@@ -486,29 +485,31 @@ class Map2D:
 
     # El mapa ya está actualizado cuando llamamos a replanPath
     def replanPath(self, x_ini,  y_ini, x_end, y_end):
+        self._initCostMatrix(init_value=-2)
         self.fillCostMatrix(x_ini,  y_ini, x_end, y_end)
-        self.findPath(x_end, y_end)
+        self.planPath(x_ini, y_ini, x_end, y_end)
 
     # DETECTOBSTACLE -------------------------------------------------------------------------------
 
-    # Devuelve los nodos adyacentes a un nodo que son obstaculos
+    # Devuelve 1 si delante de la posicion actual existe un muro
     def detectObstacle(self, x_actual, y_actual):
-
         distancia = leer_sonar()
-        if distancia != -1:
+        if distancia != -1: # placeholder
             celda_actual = self._pos2cell(x_actual, y_actual)
             # Ponemos un muro delante de nuestra posicion actual
             self.deleteConnection(celda_actual[0], celda_actual[1], 0)
+            return 1
+        return -1
 
     # GO -------------------------------------------------------------------------------
 
-    def go(self, x_goal, y_goal):
-        posicion_actual = self._pos2cell([self.x, self.y])
-        self.findPath(self, posicion_actual[0],  posicion_actual[1], x_goal, y_goal)
+    def go(self, robot, x_goal, y_goal):
+        self.findPath(self, self.x,  self.y, x_goal, y_goal)
 
         step = 0
         while step < len(self.currentPath): 
+            if self.detectObstacle(self.x, self.y) == 1:
+                self.replanPath(self.x, self.y, x_goal, y_goal)
+            
+            robot.goTo(self.x, self.y, self.currentPath[step][0], self.currentPath[step][1])
             step += 1
-            self.detectObstacle(posicion_actual[0], posicion_actual[1])
-            self.replanPath(posicion_actual[0], posicion_actual[1], x_goal, y_goal)
-            self.move(posicion_actual[0], posicion_actual[1], self.currentPath[step][0], self.currentPath[step][1])

@@ -324,3 +324,22 @@ class Robot:
         self.BP.set_motor_dps(self.BP.PORT_A, speed)
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
+
+    # Mueve al robot de la posicion ini a la posición next
+    def goTo(self, x_ini, y_ini, x_next, y_next):
+        # Se mueve una baldosa hacia delante
+        if x_ini + 1 == x_next and y_ini == y_next:
+            self.setspeed(1, 0)
+            time.sleep(2) # placeholder (mover una baldosa hacia delante)
+        # Gira hacia la derecha
+        elif x_ini == x_next and y_ini + 1 == y_next:
+            self.setspeed(0,-1)
+            time.sleep(2) # gira 90 grados hacia la derecha
+            self.setspeed(1, 0) 
+            time.sleep(2) # se mueve una baldosa
+        # Gira hacia la izquierda
+        elif x_ini == x_next and y_ini + 1 == y_next:
+            self.setspeed(0, 1)
+            time.sleep(2) # gira 90 grados hacia la izquierda
+            self.setspeed(1, 0) 
+            time.sleep(2) # se mueve una baldosa
