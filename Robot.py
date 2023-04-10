@@ -63,6 +63,26 @@ class Robot:
         self.P = 0.01
         self.log_file = open(datetime.datetime.now().strftime(
             "logs/log-%Hh-%Mm-%Ss.txt"), "w")
+        
+        # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
+        # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
+        self.acciones = {
+            ("Norte", "Oeste"): 90,
+            ("Norte", "Este"): -90,
+            ("Norte", "Sur"): 180,
+            
+            ("Sur", "Oeste"): -90,
+            ("Sur", "Este"): 90,
+            ("Sur", "Norte"): 180,
+
+            ("Este", "Norte"): 90,
+            ("Este", "Sur"): -90,
+            ("Este", "Oeste"): 180,
+
+            ("Oeste", "Norte"): -90,
+            ("Oeste", "Sur"): 90,
+            ("Oeste", "Este"): 180
+        }
 
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
@@ -327,19 +347,37 @@ class Robot:
 
     # Mueve al robot de la posicion ini a la posición next
     def goTo(self, x_ini, y_ini, x_next, y_next):
-        # Se mueve una baldosa hacia delante
-        if x_ini + 1 == x_next and y_ini == y_next:
-            self.setspeed(1, 0)
-            time.sleep(2) # placeholder (mover una baldosa hacia delante)
-        # Gira hacia la derecha
-        elif x_ini == x_next and y_ini + 1 == y_next:
-            self.setspeed(0,-1)
-            time.sleep(2) # gira 90 grados hacia la derecha
-            self.setspeed(1, 0) 
-            time.sleep(2) # se mueve una baldosa
-        # Gira hacia la izquierda
-        elif x_ini == x_next and y_ini + 1 == y_next:
-            self.setspeed(0, 1)
-            time.sleep(2) # gira 90 grados hacia la izquierda
-            self.setspeed(1, 0) 
-            time.sleep(2) # se mueve una baldosa
+
+        # Sacamos la orientación de a dónde se tiene que mover el robot
+        if (x_ini == x_next):
+            if (y_ini < y_next):
+                orientacion_destino = "Norte"
+            else:
+                orientacion_destino = "Sur"
+        else:
+            if (x_ini < x_next):
+                orientacion_destino = "Este"
+            else:
+                orientacion_destino = "Oeste"
+
+        # Calculamos la orientación del robot
+        _, _, grados = self.readOdometry()
+        grados = grados % 360
+
+        if grados < 45 or grados > 315:
+            orientacion_robot = "Norte"
+        elif grados < 135:
+            orientacion_robot = "Este"
+        elif grados < 225:
+            orientacion_robot = "Sur"
+        else: # grados < 315
+            orientacion_robot = "Oeste"
+
+        # Si acciones contiene el elemento...
+        if (orientacion_robot, orientacion_destino) in self.acciones:
+            self.setSpeed(0, np.radians(self.acciones[(orientacion_robot, orientacion_destino) / 2]))
+            time.sleep(2)
+
+        # Movemos hacia deltante
+        self.setspeed(40 / 2, 0)
+        time.sleep(2)
