@@ -63,14 +63,14 @@ class Robot:
         self.P = 0.01
         self.log_file = open(datetime.datetime.now().strftime(
             "logs/log-%Hh-%Mm-%Ss.txt"), "w")
-        
+
         # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
         # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
         self.acciones = {
             ("Norte", "Oeste"): 90,
             ("Norte", "Este"): -90,
             ("Norte", "Sur"): 180,
-            
+
             ("Sur", "Oeste"): -90,
             ("Sur", "Este"): 90,
             ("Sur", "Norte"): 180,
@@ -362,20 +362,26 @@ class Robot:
 
         # Calculamos la orientación del robot
         _, _, grados = self.readOdometry()
-        grados = grados % 360
+
+        if grados < 0:  # Si son negativos
+            grados = grados % 360
+            grados = 360 - grados
+        else:
+            grados = grados % 360
 
         if grados < 45 or grados > 315:
             orientacion_robot = "Norte"
         elif grados < 135:
-            orientacion_robot = "Este"
+            orientacion_robot = "Oeste"
         elif grados < 225:
             orientacion_robot = "Sur"
-        else: # grados < 315
-            orientacion_robot = "Oeste"
+        else:  # grados < 315
+            orientacion_robot = "Este"
 
         # Si acciones contiene el elemento...
         if (orientacion_robot, orientacion_destino) in self.acciones:
-            self.setSpeed(0, np.radians(self.acciones[(orientacion_robot, orientacion_destino) / 2]))
+            self.setSpeed(0, np.radians(
+                self.acciones[(orientacion_robot, orientacion_destino) / 2]))
             time.sleep(2)
 
         # Movemos hacia deltante
