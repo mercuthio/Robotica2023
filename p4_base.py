@@ -7,12 +7,6 @@ import time
 from Robot import Robot
 from MapLib import Map2D
 
-# def centrar_pelota(robot):
-#     Ancho_imagen = 640
-#     # Mientras no este centrada, girar hasta que este centrada
-#     while True:
-#         pelota = get_blob()
-
 
 def main(args):
     try:
@@ -22,7 +16,7 @@ def main(args):
         # 1. launch updateOdometry thread()
         robot.startOdometry()
 
-        map_file = "maps/mapa1.txt"
+        map_file = "maps/" + args.map
         myMap = Map2D(map_file)
 
         # myMap.drawMap(saveSnapshot=False)
@@ -43,7 +37,7 @@ def main(args):
         # except the program gets interrupted by Ctrl+C on the keyboard.
         # THIS IS IMPORTANT if we want that motors STOP when we Ctrl+C ...
         robot.setSpeed(0, 0)
-        robot.BP.reset_all() 
+        robot.BP.reset_all()
         robot.stopOdometry()
 
 
@@ -53,7 +47,7 @@ if __name__ == "__main__":
     # Add as many args as you need ...
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--map", help="name of the map",
-                        type=int, default=1)
+                        type=str, default="mapa1.txt")
     args = parser.parse_args()
 
     main(args)

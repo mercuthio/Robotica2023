@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import numpy as np
 import time
-import os
+import sys
 
 
 class Map2D:
@@ -428,21 +428,18 @@ class Map2D:
         return frontier
 
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
-
         goal = [x_end, y_end]
         start = [x_ini, y_ini]
         self.costMatrix[goal[0], goal[1]] = 0
 
         valor_frontera = 1
         frontera = self._getFrontierNodes()
-        while self.costMatrix[start[0], start[1]] == -2:
+        while self.costMatrix[start[0], start[1]] == -2 and len(frontera) > 0:
             for punto in frontera:
                 punto = [punto[0], punto[1]]
                 self.costMatrix[punto[0], punto[1]] = valor_frontera
             valor_frontera += 1
             frontera = self._getFrontierNodes()
-            # if len(frontera) == 0:
-            #     exit() 
 
     # FINDPATH -------------------------------------------------------------------------------
 
@@ -450,8 +447,8 @@ class Map2D:
         neighbors = []
         neigh2position = {0: (0, 1), 2: (1, 0), 4: (0, -1), 6: (-1, 0)}
 
-        # 8 vecindad
-        for i in range(0, 8):
+        # 4 vecindad
+        for i in [0, 2, 4, 6]:
             if self.isConnected(x_actual, y_actual, i):
                 neighbors.append(
                     np.add([x_actual, y_actual], neigh2position[i]))
@@ -468,7 +465,6 @@ class Map2D:
         return best_celda
 
     def planPath(self, x_ini,  y_ini, x_end, y_end):
-
         num_steps = int(self.costMatrix[x_ini, y_ini])
 
         self.currentPath = np.array([None] * num_steps)
@@ -509,7 +505,7 @@ class Map2D:
         distancia = robot.read_ultrasonic()
         if distancia < 30:  # placeholder
             # Ponemos un muro delante de nuestra posicion actual
-            dirs = {"Norte":0, "Este":2, "Oeste":6, "Sur":4}
+            dirs = {"Norte": 0, "Este": 2, "Oeste": 6, "Sur": 4}
             self.deleteConnection(x_actual, y_actual, dirs[dir])
             return 1
         return -1
@@ -525,18 +521,18 @@ class Map2D:
         step = 0
         while step < len(self.currentPath):
             if self.detectObstacle(robot, self.x, self.y, robot.orientation_robot) == 1:
-                robot.setSpeed(0,0)
+                robot.setSpeed(0, 0)
                 self.replanPath(x_goal, y_goal)
                 step = 0
 
             out = robot.goTo(self, self.x, self.y,
-                       self.currentPath[step][0], self.currentPath[step][1])
+                             self.currentPath[step][0], self.currentPath[step][1])
 
             if out == -1:
                 self.replanPath(x_goal, y_goal)
                 step = 0
                 robot.goTo(self, self.x, self.y,
-                       self.currentPath[step][0], self.currentPath[step][1])
+                           self.currentPath[step][0], self.currentPath[step][1])
 
             self.x = self.currentPath[step][0]
             self.y = self.currentPath[step][1]

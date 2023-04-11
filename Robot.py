@@ -41,7 +41,9 @@ class Robot:
         # Configure sensors, for example a touch sensor.
         # self.BP.set_sensor_type(self.BP.PORT_1, self.BP.SENSOR_TYPE.TOUCH)
 
-        self.BP.set_sensor_type(self.BP.PORT_2, self.BP.SENSOR_TYPE.EV3_ULTRASONIC_CM) # Configure for an EV3 ultrasonic sensor.
+        # Configure for an EV3 ultrasonic sensor.
+        self.BP.set_sensor_type(
+            self.BP.PORT_2, self.BP.SENSOR_TYPE.EV3_ULTRASONIC_CM)
 
         # reset encoder B and C (or all the motors you are using)
         self.BP.offset_motor_encoder(self.BP.PORT_B,
@@ -365,7 +367,7 @@ class Robot:
 
         # Calculamos la orientación del robot
         _, _, grados = self.readOdometry()
-        
+
         grados = grados % 360
 
         print("Grados:", grados)
@@ -378,7 +380,7 @@ class Robot:
             self.orientation_robot = "Sur"
         else:  # grados < 315
             self.orientation_robot = "Este"
-        
+
         print("Orientación del robot:", self.orientation_robot)
 
         # Si acciones contiene el elemento...
@@ -389,7 +391,7 @@ class Robot:
             self.orientation_robot = orientacion_destino
 
             if Map2D.detectObstacle(self, Map2D.x, Map2D.y, self.orientation_robot) == 1:
-                self.setSpeed(0,0)
+                self.setSpeed(0, 0)
                 return -1
 
         # Movemos hacia deltante
@@ -402,7 +404,8 @@ class Robot:
         while value <= 0:
             try:
                 value = self.BP.get_sensor(self.BP.PORT_2)
-                print("Sonar:",value)                         # print the distance in CM
+                # print the distance in CM
+                print("Sonar:", value)
             except brickpi3.SensorError as error:
                 print("Error de sonar.", error)
         return value
