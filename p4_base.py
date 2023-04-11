@@ -6,6 +6,7 @@ import numpy as np
 import time
 from Robot import Robot
 from MapLib import Map2D
+from plotOdometry import generatePlot
 
 
 def main(args):
@@ -31,7 +32,12 @@ def main(args):
 
         # This currently unconfigure the sensors, disable the motors,
         # and restore the LED to the control of the BrickPi3 firmware.
+        robot.setSpeed(0, 0)
+        robot.BP.reset_all()
         robot.stopOdometry()
+
+        if args.plot:
+            generatePlot(robot.log_file_name)
 
     except KeyboardInterrupt:
         # except the program gets interrupted by Ctrl+C on the keyboard.
@@ -48,6 +54,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--map", help="name of the map",
                         type=str, default="mapa1.txt")
+    parser.add_argument(
+        "-p", "--plot", help="plot odometry", action='store_true')
     args = parser.parse_args()
 
     main(args)

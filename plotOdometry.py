@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dibrobot import *
 
-if len(sys.argv) == 2:
-    f = sys.argv[1]
+
+def generatePlot(f):
     with open("logs/" + f, "r") as file:
         for line in file:
             x_pos = line.find("X:")
@@ -16,7 +16,12 @@ if len(sys.argv) == 2:
             y_val = line[y_pos+2:th_pos].strip()
             th_val = line[th_pos+3:v_pos].strip()
             dibrobot([float(x_val), float(y_val),
-                     float(th_val)], 'purple', 'p')
-    plt.show()
-else:
-    print("Usage: python3 plotOdometry.py [fileName]")
+                      float(th_val)], 'purple', 'p')
+        plt.show()
+
+
+# if len(sys.argv) == 2:
+#     f = sys.argv[1]
+#     generatePlot(f)
+# else:
+#     print("Usage: python3 plotOdometry.py [fileName]")

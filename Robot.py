@@ -66,8 +66,8 @@ class Robot:
         self.lock_odometry = Lock()
 
         self.P = 0.01
-        self.log_file = open(datetime.datetime.now().strftime(
-            "logs/log-%Hh-%Mm-%Ss.txt"), "w")
+        self.log_file_name = datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt")
+        self.log_file = open("logs/" + self.log_file_name, "w")
 
         # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
         # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
@@ -147,7 +147,7 @@ class Robot:
             self.v.value = (
                 self.R * (np.radians(diferencia_C) + np.radians(diferencia_B))) / 2
             self.w.value = (self.R * (np.radians(diferencia_C) -
-                            np.radians(diferencia_B))) / self.L
+                                      np.radians(diferencia_B))) / self.L
 
             As = self.v.value * self.P
             Ath = self.w.value * self.P
