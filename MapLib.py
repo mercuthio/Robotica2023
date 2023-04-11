@@ -49,6 +49,9 @@ class Map2D:
         self.costMatrix = None
         self.currentPath = None
 
+        self.x = 0
+        self.y = 0
+
         if self._loadMap(map_description_file):
             print("Map %s loaded ok" % map_description_file)
         else:
@@ -466,8 +469,16 @@ class Map2D:
 
     def planPath(self, x_ini,  y_ini, x_end, y_end):
 
+        print("Posiciones recibidas: ", x_ini, y_ini, x_end, y_end)
+
         num_steps = int(self.costMatrix[x_ini, y_ini])
+
+        print("Const matrix: ", self.costMatrix)
+        print("Num steps: ", num_steps)
+
         self.currentPath = np.array([None] * num_steps)
+
+        print("Current path: ", self.currentPath)
 
         nodo_actual = [x_ini, y_ini]
 
@@ -495,12 +506,13 @@ class Map2D:
         self.fillCostMatrix(x_ini,  y_ini, x_end, y_end)
         self.planPath(x_ini, y_ini, x_end, y_end)
 
+
     # DETECTOBSTACLE -------------------------------------------------------------------------------
 
     # Devuelve 1 si delante de la posicion actual existe un muro
-    def detectObstacle(self, x_actual, y_actual):
-        distancia = leer_sonar()
-        if distancia != -1:  # placeholder
+    def detectObstacle(self, robot, x_actual, y_actual):
+        distancia = robot.read_ultrasonic()
+        if distancia < 30:  # placeholder
             celda_actual = self._pos2cell(x_actual, y_actual)
             # Ponemos un muro delante de nuestra posicion actual
             self.deleteConnection(celda_actual[0], celda_actual[1], 0)
@@ -510,13 +522,24 @@ class Map2D:
     # GO -------------------------------------------------------------------------------
 
     def go(self, robot, x_goal, y_goal):
-        self.findPath(self, self.x,  self.y, x_goal, y_goal)
+        self.fillCostMatrix(self.x, self.y, x_goal, y_goal)
+
+        # Calculo el camino desde la posicion actual hasta la posicion objetivo
+        self.findPath([self.x,  self.y], [x_goal, y_goal])
+
+        print (self.currentPath)
 
         step = 0
         while step < len(self.currentPath):
-            if self.detectObstacle(self.x, self.y) == 1:
+            if self.detectObstacle(robot, self.x, self.y) == 1:
                 self.replanPath(self.x, self.y, x_goal, y_goal)
 
             robot.goTo(self.x, self.y,
                        self.currentPath[step][0], self.currentPath[step][1])
+
+            self.x = self.currentPath[step][0]
+            self.y = self.currentPath[step][1]
+
             step += 1
+
+        robot.setSpeed(0, 0)
