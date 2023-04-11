@@ -350,9 +350,14 @@ class Robot:
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
-    # Mueve al robot de la posicion ini a la posición next
-    def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
+    def _getPosChange(self, x_pos_ini, y_pos_ini):
+        # prueba
+        x_now, y_now, _ = self.readOdometry()
+        return abs(x_now - x_pos_ini + y_now - y_pos_ini)
 
+        # Mueve al robot de la posicion ini a la posición next
+    def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
+        """Goes to a position"""
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
             if (y_ini < y_next):
@@ -366,7 +371,7 @@ class Robot:
                 orientacion_destino = "Oeste"
 
         # Calculamos la orientación del robot
-        _, _, grados = self.readOdometry()
+        x_pos_ini, y_pos_ini, grados = self.readOdometry()
 
         grados = grados % 360
 
@@ -394,7 +399,7 @@ class Robot:
                 self.setSpeed(0, 0)
                 return -1
 
-        # Movemos hacia deltante
+        # Movemos hacia adelante
         self.setSpeed(40 / 4, 0)
         time.sleep(4)
 
