@@ -404,13 +404,10 @@ class Robot:
         time.sleep(4)
 
     def read_ultrasonic(self):
+        """Reads ultrasonic sensor value"""
         value = 0
-
         while value <= 0:
-            try:
-                value = self.BP.get_sensor(self.BP.PORT_2)
-                # print the distance in CM
-                print("Sonar:", value)
-            except brickpi3.SensorError as error:
-                print("Error de sonar.", error)
+            value = self.BP.get_sensor(self.BP.PORT_2)
+            # print the distance in CM
+            print("Sonar:", value)
         return value
