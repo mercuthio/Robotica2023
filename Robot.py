@@ -58,6 +58,7 @@ class Robot:
         self.w = Value('d', 0.0)
         # boolean to show if odometry updates are finished
         self.finished = Value('b', 1)
+        self.orientation_robot = "Norte"
 
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
@@ -348,7 +349,7 @@ class Robot:
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
     # Mueve al robot de la posicion ini a la posición next
-    def goTo(self, x_ini, y_ini, x_next, y_next):
+    def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
 
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
@@ -364,33 +365,32 @@ class Robot:
 
         # Calculamos la orientación del robot
         _, _, grados = self.readOdometry()
-
-        print("Grados:", grados)
-
-        if grados < 0:  # Si son negativos
-            grados = grados % 360
-            # grados = 360 - grados
-        else:
-            grados = grados % 360
+        
+        grados = grados % 360
 
         print("Grados:", grados)
 
         if grados < 45 or grados > 315:
-            orientacion_robot = "Norte"
+            self.orientation_robot = "Norte"
         elif grados < 135:
-            orientacion_robot = "Oeste"
+            self.orientation_robot = "Oeste"
         elif grados < 225:
-            orientacion_robot = "Sur"
+            self.orientation_robot = "Sur"
         else:  # grados < 315
-            orientacion_robot = "Este"
+            self.orientation_robot = "Este"
         
-        print("Orientación del robot:", orientacion_robot)
+        print("Orientación del robot:", self.orientation_robot)
 
         # Si acciones contiene el elemento...
-        if (orientacion_robot, orientacion_destino) in self.acciones:
+        if (self.orientation_robot, orientacion_destino) in self.acciones:
             self.setSpeed(0, np.radians(
-                self.acciones[(orientacion_robot, orientacion_destino)] / 2))
+                self.acciones[(self.orientation_robot, orientacion_destino)] / 2))
             time.sleep(2)
+            self.orientation_robot = orientacion_destino
+
+            if Map2D.detectObstacle(self, Map2D.x, Map2D.y, self.orientation_robot) == 1:
+                self.setSpeed(0,0)
+                return -1
 
         # Movemos hacia deltante
         self.setSpeed(40 / 4, 0)
@@ -398,9 +398,11 @@ class Robot:
 
     def read_ultrasonic(self):
         value = 0
-        try:
-            value = self.BP.get_sensor(self.BP.PORT_2)
-            print("Sonar:",value)                         # print the distance in CM
-        except brickpi3.SensorError as error:
-            print("Error de sonar.", error)
+
+        while value <= 0:
+            try:
+                value = self.BP.get_sensor(self.BP.PORT_2)
+                print("Sonar:",value)                         # print the distance in CM
+            except brickpi3.SensorError as error:
+                print("Error de sonar.", error)
         return value

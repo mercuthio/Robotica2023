@@ -43,6 +43,7 @@ def main(args):
         # except the program gets interrupted by Ctrl+C on the keyboard.
         # THIS IS IMPORTANT if we want that motors STOP when we Ctrl+C ...
         robot.setSpeed(0, 0)
+        robot.BP.reset_all() 
         robot.stopOdometry()
 
 

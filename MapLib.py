@@ -435,14 +435,14 @@ class Map2D:
 
         valor_frontera = 1
         frontera = self._getFrontierNodes()
-
         while self.costMatrix[start[0], start[1]] == -2:
             for punto in frontera:
                 punto = [punto[0], punto[1]]
                 self.costMatrix[punto[0], punto[1]] = valor_frontera
-
             valor_frontera += 1
             frontera = self._getFrontierNodes()
+            # if len(frontera) == 0:
+            #     exit() 
 
     # FINDPATH -------------------------------------------------------------------------------
 
@@ -462,19 +462,14 @@ class Map2D:
         best_celda = [-1, -1]
         for n in neighbors:
             n_mat = [n[0], n[1]]
-            if self.costMatrix[n_mat[0], n_mat[1]] < min:
+            if -2 < self.costMatrix[n_mat[0], n_mat[1]] < min:
                 min = self.costMatrix[n_mat[0], n_mat[1]]
                 best_celda = n
         return best_celda
 
     def planPath(self, x_ini,  y_ini, x_end, y_end):
 
-        print("Posiciones recibidas: ", x_ini, y_ini, x_end, y_end)
-
         num_steps = int(self.costMatrix[x_ini, y_ini])
-
-        print("Const matrix: ", self.costMatrix)
-        print("Num steps: ", num_steps)
 
         self.currentPath = np.array([None] * num_steps)
 
@@ -501,21 +496,21 @@ class Map2D:
     # REPLANPATH -------------------------------------------------------------------------------
 
     # El mapa ya está actualizado cuando llamamos a replanPath
-    def replanPath(self, x_ini,  y_ini, x_end, y_end):
+    def replanPath(self, x_end, y_end):
         self._initCostMatrix(init_value=-2)
-        self.fillCostMatrix(x_ini,  y_ini, x_end, y_end)
-        self.planPath(x_ini, y_ini, x_end, y_end)
-
+        self.fillCostMatrix(self.x,  self.y, x_end, y_end)
+        self.findPath([self.x,  self.y], [x_end, y_end])
+        print("New path: ", self.currentPath)
 
     # DETECTOBSTACLE -------------------------------------------------------------------------------
 
     # Devuelve 1 si delante de la posicion actual existe un muro
-    def detectObstacle(self, robot, x_actual, y_actual):
+    def detectObstacle(self, robot, x_actual, y_actual, dir):
         distancia = robot.read_ultrasonic()
         if distancia < 30:  # placeholder
-            celda_actual = self._pos2cell(x_actual, y_actual)
             # Ponemos un muro delante de nuestra posicion actual
-            self.deleteConnection(celda_actual[0], celda_actual[1], 0)
+            dirs = {"Norte":0, "Este":2, "Oeste":6, "Sur":4}
+            self.deleteConnection(x_actual, y_actual, dirs[dir])
             return 1
         return -1
 
@@ -527,14 +522,20 @@ class Map2D:
         # Calculo el camino desde la posicion actual hasta la posicion objetivo
         self.findPath([self.x,  self.y], [x_goal, y_goal])
 
-        print (self.currentPath)
-
         step = 0
         while step < len(self.currentPath):
-            if self.detectObstacle(robot, self.x, self.y) == 1:
-                self.replanPath(self.x, self.y, x_goal, y_goal)
+            if self.detectObstacle(robot, self.x, self.y, robot.orientation_robot) == 1:
+                robot.setSpeed(0,0)
+                self.replanPath(x_goal, y_goal)
+                step = 0
 
-            robot.goTo(self.x, self.y,
+            out = robot.goTo(self, self.x, self.y,
+                       self.currentPath[step][0], self.currentPath[step][1])
+
+            if out == -1:
+                self.replanPath(x_goal, y_goal)
+                step = 0
+                robot.goTo(self, self.x, self.y,
                        self.currentPath[step][0], self.currentPath[step][1])
 
             self.x = self.currentPath[step][0]
