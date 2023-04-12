@@ -394,19 +394,10 @@ class Map2D:
         return self.planPath(point_ini[0], point_ini[1],
                              point_end[0], point_end[1])
 
-    # ############################################################
-    # METHODS to IMPLEMENT in P4
-    # ############################################################
-
-    def _toMapCoord(self, x_cell, y_cell):
-        return [y_cell, self.sizeX - 1 - x_cell]
-
-    def _toMatrixCoord(self, x_cell, y_cell):
-        return [self.sizeX - y_cell - 1, x_cell]
-
     # FILLCOSTMATRIX -------------------------------------------------------------------------------
 
     def _getFrontierNodes(self):
+        """Returns the border nodes"""
         frontier = []
         neigh2position = {0: (0, 1), 2: (1, 0), 4: (0, -1), 6: (-1, 0)}
 
@@ -428,6 +419,7 @@ class Map2D:
         return frontier
 
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
+        """Fills the cost matrix"""
         goal = [x_end, y_end]
         start = [x_ini, y_ini]
         self.costMatrix[goal[0], goal[1]] = 0
@@ -441,9 +433,13 @@ class Map2D:
             valor_frontera += 1
             frontera = self._getFrontierNodes()
 
+        if len(frontera) <= 0:
+            print("[!] No path available. Border is empty.")
+
     # FINDPATH -------------------------------------------------------------------------------
 
     def _getNeighBors(self, x_actual, y_actual):
+        """Gives cell neighbors"""
         neighbors = []
         neigh2position = {0: (0, 1), 2: (1, 0), 4: (0, -1), 6: (-1, 0)}
 
@@ -455,6 +451,7 @@ class Map2D:
         return neighbors
 
     def _getBestNode(self, neighbors):
+        """Returns the best border node"""
         min = float('inf')
         best_celda = [-1, -1]
         for n in neighbors:
@@ -465,11 +462,13 @@ class Map2D:
         return best_celda
 
     def planPath(self, x_ini,  y_ini, x_end, y_end):
+        """Returns the optimal path"""
         num_steps = int(self.costMatrix[x_ini, y_ini])
 
         self.currentPath = np.array([None] * num_steps)
 
-        print("Current path: ", self.currentPath)
+        if self.verbose:
+            print("Current path: ", self.currentPath)
 
         nodo_actual = [x_ini, y_ini]
 
@@ -491,21 +490,22 @@ class Map2D:
 
     # REPLANPATH -------------------------------------------------------------------------------
 
-    # El mapa ya está actualizado cuando llamamos a replanPath
     def replanPath(self, x_end, y_end):
+        """Replans the cost matrix and path"""
         self._initCostMatrix(init_value=-2)
         self.fillCostMatrix(self.x,  self.y, x_end, y_end)
         self.findPath([self.x,  self.y], [x_end, y_end])
-        print("New path: ", self.currentPath)
+        if self.verbose:
+            print("New path: ", self.currentPath)
 
     # DETECTOBSTACLE -------------------------------------------------------------------------------
 
-    # Devuelve 1 si delante de la posicion actual existe un muro
     def detectObstacle(self, robot, x_actual, y_actual, dir):
+        """Detects an obstacle with the ultrasonic sensor, returns 1"""
         distancia = robot.read_ultrasonic()
         if distancia < 30:  # placeholder
             # Ponemos un muro delante de nuestra posicion actual
-            dirs = {"Norte": 0, "Este": 2, "Oeste": 6, "Sur": 4}
+            dirs = {"North": 0, "East": 2, "West": 6, "South": 4}
             self.deleteConnection(x_actual, y_actual, dirs[dir])
             return 1
         return -1
@@ -513,6 +513,7 @@ class Map2D:
     # GO -------------------------------------------------------------------------------
 
     def go(self, robot, x_goal, y_goal):
+        """Main procedure"""
         self.fillCostMatrix(self.x, self.y, x_goal, y_goal)
 
         # Calculo el camino desde la posicion actual hasta la posicion objetivo

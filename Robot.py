@@ -31,6 +31,7 @@ class Robot:
         # Robot construction parameters
         self.R = 2.6
         self.L = 11.8
+        self.B = 40.0
 
         ##################################################
         # Motors and sensors setup
@@ -60,7 +61,7 @@ class Robot:
         self.w = Value('d', 0.0)
         # boolean to show if odometry updates are finished
         self.finished = Value('b', 1)
-        self.orientation_robot = "Norte"
+        self.orientation_robot = "North"
 
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
@@ -72,21 +73,21 @@ class Robot:
         # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
         # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
         self.acciones = {
-            ("Norte", "Oeste"): 90,
-            ("Norte", "Este"): -90,
-            ("Norte", "Sur"): 180,
+            ("North", "West"): 90,
+            ("North", "East"): -90,
+            ("North", "South"): 180,
 
-            ("Sur", "Oeste"): -90,
-            ("Sur", "Este"): 90,
-            ("Sur", "Norte"): 180,
+            ("South", "West"): -90,
+            ("South", "East"): 90,
+            ("South", "North"): 180,
 
-            ("Este", "Norte"): 90,
-            ("Este", "Sur"): -90,
-            ("Este", "Oeste"): 180,
+            ("East", "North"): 90,
+            ("East", "South"): -90,
+            ("East", "West"): 180,
 
-            ("Oeste", "Norte"): -90,
-            ("Oeste", "Sur"): 90,
-            ("Oeste", "Este"): 180
+            ("West", "North"): -90,
+            ("West", "South"): 90,
+            ("West", "East"): 180
         }
 
     def setSpeed(self, v, w):
@@ -190,7 +191,6 @@ class Robot:
         self.log_file.close()
         # self.BP.reset_all()
 
-    # Operación para perseguir y capturar la pelota.
     def trackObject(self, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
         """Tracks the object until the robot can catch it"""
 
@@ -350,49 +350,54 @@ class Robot:
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
-    def _moveDistance(self, pos_ini, pos_end):
+    def _moveCell(self, pos_ini):
         # prueba
-        while self._getPosChange(pos_end) > 0:
-            self.setSpeed(self._getPosChange(pos_end) / 2, 0)
+        change = self._getPosChange(pos_ini)
+        while change < self.B:
+            self.setSpeed((self.B - change) / 2.0, 0)
             time.sleep(0.01)
+            change = self._getPosChange(pos_ini)
+        self.setSpeed(0, 0)
 
     def _getPosChange(self, pos_ini):
         # prueba
         x_now, y_now, _ = self.readOdometry()
         return abs(x_now - pos_ini[0] + y_now - pos_ini[1])
 
-        # Mueve al robot de la posicion ini a la posición next
+    def _defineOrientation(self, theta):
+        """Sets the orientation depending on theta"""
+        if theta < 45 or theta > 315:
+            self.orientation_robot = "North"
+        elif theta < 135:
+            self.orientation_robot = "West"
+        elif theta < 225:
+            self.orientation_robot = "South"
+        else:  # grados < 315
+            self.orientation_robot = "East"
+
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
-        """Goes to a position"""
+        """Goes to a position next from ini"""
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
             if (y_ini < y_next):
-                orientacion_destino = "Norte"
+                orientacion_destino = "North"
             else:
-                orientacion_destino = "Sur"
+                orientacion_destino = "South"
         else:
             if (x_ini < x_next):
-                orientacion_destino = "Este"
+                orientacion_destino = "East"
             else:
-                orientacion_destino = "Oeste"
+                orientacion_destino = "West"
 
         # Calculamos la orientación del robot
         x_pos_ini, y_pos_ini, grados = self.readOdometry()
 
         grados = grados % 360
 
-        print("Grados:", grados)
+        self._defineOrientation(grados)
 
-        if grados < 45 or grados > 315:
-            self.orientation_robot = "Norte"
-        elif grados < 135:
-            self.orientation_robot = "Oeste"
-        elif grados < 225:
-            self.orientation_robot = "Sur"
-        else:  # grados < 315
-            self.orientation_robot = "Este"
-
-        print("Orientación del robot:", self.orientation_robot)
+        print("New orientation:", self.orientation_robot,
+              "| theta change:", grados)
 
         # Si acciones contiene el elemento...
         if (self.orientation_robot, orientacion_destino) in self.acciones:
@@ -403,11 +408,13 @@ class Robot:
 
             if Map2D.detectObstacle(self, Map2D.x, Map2D.y, self.orientation_robot) == 1:
                 self.setSpeed(0, 0)
+                print("[!] Obstáculo detectado. Recalculando matriz.")
                 return -1
 
         # Movemos hacia adelante
-        self.setSpeed(40 / 4, 0)
-        time.sleep(4)
+        # self.setSpeed(40 / 4, 0)
+        # time.sleep(4)
+        self._moveCell([x_pos_ini, y_pos_ini])
 
     def read_ultrasonic(self):
         """Reads ultrasonic sensor value"""
