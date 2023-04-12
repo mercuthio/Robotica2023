@@ -350,10 +350,16 @@ class Robot:
         time.sleep(0.6)
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
-    def _getPosChange(self, x_pos_ini, y_pos_ini):
+    def _moveDistance(self, pos_ini, pos_end):
+        # prueba
+        while self._getPosChange(pos_end) > 0:
+            self.setSpeed(self._getPosChange(pos_end) / 2, 0)
+            time.sleep(0.01)
+
+    def _getPosChange(self, pos_ini):
         # prueba
         x_now, y_now, _ = self.readOdometry()
-        return abs(x_now - x_pos_ini + y_now - y_pos_ini)
+        return abs(x_now - pos_ini[0] + y_now - pos_ini[1])
 
         # Mueve al robot de la posicion ini a la posición next
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
