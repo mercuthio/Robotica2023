@@ -406,29 +406,24 @@ class Map2D:
 
         # Busco en la matriz todas las celdas que tengan el valor maximo
         for node in max_nodes:
-            node = [node[0], node[1]]
             # 4 vecindad
             for i in [0, 2, 4, 6]:
                 if self.isConnected(node[0], node[1], i):
                     cell = np.add(node, neigh2position[i])
-                    cell_mat = [cell[0], cell[1]]
                     # Si el nodo no esta visitado
-                    if self.costMatrix[cell_mat[0], cell_mat[1]] < 0:
+                    if self.costMatrix[cell[0], cell[1]] < 0:
                         frontier.append(cell)
 
         return frontier
 
     def fillCostMatrix(self, x_ini,  y_ini, x_end, y_end):
         """Fills the cost matrix"""
-        goal = [x_end, y_end]
-        start = [x_ini, y_ini]
-        self.costMatrix[goal[0], goal[1]] = 0
+        self.costMatrix[x_end, y_end] = 0
 
         valor_frontera = 1
         frontera = self._getFrontierNodes()
-        while self.costMatrix[start[0], start[1]] == -2 and len(frontera) > 0:
+        while self.costMatrix[x_ini, y_ini] == -2 and len(frontera) > 0:
             for punto in frontera:
-                punto = [punto[0], punto[1]]
                 self.costMatrix[punto[0], punto[1]] = valor_frontera
             valor_frontera += 1
             frontera = self._getFrontierNodes()
@@ -455,9 +450,8 @@ class Map2D:
         min = float('inf')
         best_celda = [-1, -1]
         for n in neighbors:
-            n_mat = [n[0], n[1]]
-            if -2 < self.costMatrix[n_mat[0], n_mat[1]] < min:
-                min = self.costMatrix[n_mat[0], n_mat[1]]
+            if -2 < self.costMatrix[n[0], n[1]] < min:
+                min = self.costMatrix[n[0], n[1]]
                 best_celda = n
         return best_celda
 
@@ -471,12 +465,10 @@ class Map2D:
             print("Current path: ", self.currentPath)
 
         nodo_actual = [x_ini, y_ini]
-
         step = 0
 
         for step in range(0, num_steps):
-            nodos_adyacentes = self._getNeighBors(
-                nodo_actual[0], nodo_actual[1])
+            nodos_adyacentes = self._getNeighBors(nodo_actual[0], nodo_actual[1])
             if len(nodos_adyacentes) == 0:
                 return False
             # obtenemos el menor vecino
@@ -508,17 +500,15 @@ class Map2D:
         if self.verbose:
             print("[!] Obstáculo detectado. Distancia:", distancia)
 
-        # placeholder
         if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):
             # Ponemos un muro delante de nuestra posicion actual
             self.deleteConnection(x_actual, y_actual, dirs[dir])
 
             distancia_optima = 15
-
             # Corregimos la distancia para quedarnos a justo 13 cm del obstaculo
             if abs(distancia - distancia_optima) > 0.5:
                 time.sleep(1)
-                robot.setSpeed((distancia - distancia_optima), 0)
+                robot.setSpeed(distancia - distancia_optima, 0)
                 time.sleep(1)
                 robot.setSpeed(0, 0)
 
@@ -530,9 +520,11 @@ class Map2D:
     def go(self, robot, x_ini, y_ini, x_goal, y_goal):
         """Main procedure"""
 
+        # Esperamos a que se inicien el giroscopio y el sonar
         robot.waitGyro()
         robot.waitSonar()
 
+        # Iniciamos la celda del robot actual al inicio
         self.x = x_ini
         self.y = y_ini
         self.fillCostMatrix(self.x, self.y, x_goal, y_goal)
@@ -542,19 +534,23 @@ class Map2D:
 
         step = 0
         while step < len(self.currentPath):
+            # Comprobamos si hay obstaculos
             if self.detectObstacle(robot, self.x, self.y, robot.orientation_robot) == 1:
                 robot.setSpeed(0, 0)
                 self.replanPath(x_goal, y_goal)
                 step = 0
 
+            # Avanzamos una celda
             out = robot.goTo(self, self.x, self.y,
                              self.currentPath[step][0], self.currentPath[step][1])
 
+            # No hemos podido avanzar la al detectar un obstaculo
             if out == -1:
                 step = 0
                 self.replanPath(x_goal, y_goal)
                 continue
 
+            # Actualizamos la celda actual
             self.x = self.currentPath[step][0]
             self.y = self.currentPath[step][1]
 
