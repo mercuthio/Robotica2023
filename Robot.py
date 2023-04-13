@@ -100,7 +100,7 @@ class Robot:
             ("West"): 90
         }
 
-    def esperar_giroscopio(self):
+    def waitGyro(self):
         value = 1
         while value != 0:
             try:
@@ -416,7 +416,7 @@ class Robot:
 
         self.setSpeed(0, np.radians(sentido_giro / 3.0))
 
-        theta = -self.read_gyro()
+        theta = self.read_gyro()
         if (theta < 0):
             theta = theta % 360
             theta = theta - 360
@@ -431,7 +431,7 @@ class Robot:
 
         if theta - destino > 0:
             while theta - destino > 0.5:
-                theta = -self.read_gyro()
+                theta = self.read_gyro()
                 if (theta < 0):
                     theta = theta % 360
                     theta = theta - 360
@@ -439,7 +439,7 @@ class Robot:
                     theta = theta % 360
         else:
             while theta - destino < -0.5:
-                theta = -self.read_gyro()
+                theta = self.read_gyro()
                 if (theta < 0):
                     theta = theta % 360
                     theta = theta - 360
@@ -450,8 +450,6 @@ class Robot:
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
-        print("INICIANDO TRAYECTORIA DESDE", x_ini,
-              y_ini, "HASTA", x_next, y_next)
         """Goes to a position next from ini"""
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
@@ -469,8 +467,7 @@ class Robot:
               orientacion_destino, "\n")
 
         # Calculamos la orientación del robot
-        x_pos_ini, y_pos_ini, _ = self.readOdometry()
-        grados = -self.read_gyro()
+        grados = self.read_gyro()
         grados = grados % 360
 
         self._defineOrientation(grados)
@@ -498,10 +495,11 @@ class Robot:
                 return -1
 
         # Obtenemos los grados y los grados que debería tener
-        grados = -self.read_gyro()
-        if (grados < 0):
-            grados = grados % 360
-            grados = grados - 360
+        grados = self.read_gyro()
+
+        # Realizamos el módulo 360
+        if grados < 0:
+            grados = (grados % 360) - 360
         else:
             grados = grados % 360
 
@@ -511,10 +509,10 @@ class Robot:
             destino = -180
 
         # Movemos hacia adelante
-        print("///////////////////////////////")
-        print("Mi orientacion es: ", grados)
-        print("Mi orientación destino es: ", destino)
-        print("La corrección es: ", destino - grados)
+        # print("///////////////////////////////")
+        # print("Mi orientacion es: ", grados)
+        # print("Mi orientación destino es: ", destino)
+        # print("La corrección es: ", destino - grados)
         self.setSpeed(40 / 4, np.radians((destino - grados) / 4))
         time.sleep(4)
         self.setSpeed(0, 0)
@@ -536,7 +534,7 @@ class Robot:
         """Reads gyro sensor value"""
         value = 0
         try:
-            value = self.BP.get_sensor(self.BP.PORT_1)[0]
+            value = -self.BP.get_sensor(self.BP.PORT_1)[0]
         except brickpi3.SensorError as error:
             print("Error de giroscopio.", error)
         return value

@@ -15,10 +15,15 @@ def main(args):
 
     myMap.drawMap(saveSnapshot=False)
 
+    start_pos = [0, 0]
+    finish_pos = [myMap.sizeX - 1, 0]
+
     # myMap.go(robot, 2, 0)
 
-    myMap.fillCostMatrix(0, 0, 2, 0)
-    myMap.planPath(0, 0, 2, 0)
+    myMap.fillCostMatrix(start_pos[0], start_pos[1],
+                         finish_pos[0], finish_pos[1])
+    myMap.planPath(start_pos[0], start_pos[1],
+                   finish_pos[0], finish_pos[1])
     print(myMap.costMatrix)
     print(myMap.currentPath)
     myMap.drawMap(saveSnapshot=False)

@@ -508,7 +508,8 @@ class Map2D:
         distancia = robot.read_ultrasonic()
         print("La distancia con respeto al obstáculo de en frente es: ", distancia)
 
-        if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):  # placeholder
+        # placeholder
+        if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):
             # Ponemos un muro delante de nuestra posicion actual
             self.deleteConnection(x_actual, y_actual, dirs[dir])
 
@@ -528,6 +529,9 @@ class Map2D:
 
     def go(self, robot, x_ini, y_ini, x_goal, y_goal):
         """Main procedure"""
+
+        robot.waitGyro()
+
         self.x = x_ini
         self.y = y_ini
         self.fillCostMatrix(self.x, self.y, x_goal, y_goal)
@@ -549,9 +553,9 @@ class Map2D:
                 step = 0
                 self.replanPath(x_goal, y_goal)
                 # robot.goTo(self, self.x, self.y,
-                        #    self.currentPath[step][0], self.currentPath[step][1])
+                #    self.currentPath[step][0], self.currentPath[step][1])
                 continue
-            
+
             self.x = self.currentPath[step][0]
             self.y = self.currentPath[step][1]
 

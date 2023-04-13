@@ -6,7 +6,7 @@ import numpy as np
 import time
 from Robot import Robot
 from MapLib import Map2D
-from plotOdometry import generatePlot
+from plotManager import generatePlot
 
 
 def main(args):
@@ -17,15 +17,16 @@ def main(args):
         # 1. launch updateOdometry thread()
         robot.startOdometry()
 
-
         map_file = "maps/" + args.map
         myMap = Map2D(map_file)
 
         # myMap.drawMap(saveSnapshot=False)
 
-        robot.esperar_giroscopio()
+        start_pos = [0, 0]
+        finish_pos = [myMap.sizeX - 1, 0]
 
-        myMap.go(robot, 0, 0, 6, 0)
+        myMap.go(robot, start_pos[0], start_pos[1],
+                 finish_pos[0], finish_pos[1])
 
         # myMap.fillCostMatrix(0, 0, 2, 0)
         # myMap.planPath(0, 0, 2, 0)
