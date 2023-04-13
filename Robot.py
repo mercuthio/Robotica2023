@@ -100,17 +100,6 @@ class Robot:
             ("West"): 90
         }
 
-    def waitGyro(self):
-        value = 1
-        while value != 0:
-            try:
-                self.BP.get_sensor(self.BP.PORT_1)[0]
-                value = 0
-            except brickpi3.SensorError as error:
-                print(error)
-                self.setSpeed(0, 0)
-                time.sleep(0.1)
-
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
 
@@ -380,12 +369,11 @@ class Robot:
         change = self._getPosChange(pos_ini)
 
         min_vel = 8
-        max_vel = self.B / 4
+        max_vel = self.B / 2.0
 
         while change < self.B:
-            v = np.clip((self.B - change) / 2, min_vel, max_vel)
+            v = np.clip((self.B - change) / 2.0, min_vel, max_vel)
             self.setSpeed(v, 0)
-            time.sleep(0.001)
             change = self._getPosChange(pos_ini)
         self.setSpeed(0, 0)
 
@@ -406,25 +394,20 @@ class Robot:
             self.orientation_robot = "East"
 
     def _turnOdometry(self, sentido_giro, destino):
-
-        if (sentido_giro > 0):
-            print("Voy a girar hacia la izquierda a velocidad",
-                  abs(sentido_giro / 4))
-        else:
-            print("Voy a girar hacia la derecha a velocidad",
-                  abs(sentido_giro / 4))
+        """Turns the robot given a sentido_giro and a destino"""
 
         self.setSpeed(0, np.radians(sentido_giro / 3.0))
 
         theta = self.read_gyro()
-        if (theta < 0):
-            theta = theta % 360
-            theta = theta - 360
-        else:
-            theta = theta % 360
 
-        print("Mi orientación actual es: ", theta, "\n")
-        print("La orientación a la que quiero ir es: ", destino, "\n")
+        print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
+
+        # Pasamos los grados a [-180, 180]
+        theta = (theta + 180) % 360 - 180
+
+        print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+
+        print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
 
         if destino == 180 and theta < 0:
             destino = -180
@@ -432,25 +415,18 @@ class Robot:
         if theta - destino > 0:
             while theta - destino > 0.5:
                 theta = self.read_gyro()
-                if (theta < 0):
-                    theta = theta % 360
-                    theta = theta - 360
-                else:
-                    theta = theta % 360
+                theta = (theta + 180) % 360 - 180
         else:
             while theta - destino < -0.5:
                 theta = self.read_gyro()
-                if (theta < 0):
-                    theta = theta % 360
-                    theta = theta - 360
-                else:
-                    theta = theta % 360
+                theta = (theta + 180) % 360 - 180
 
-        print("Angulo final de Gyro:", theta)
+        print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
         """Goes to a position next from ini"""
+
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
             if (y_ini < y_next):
@@ -462,9 +438,6 @@ class Robot:
                 orientacion_destino = "East"
             else:
                 orientacion_destino = "West"
-
-        print("\nLa orientación a la que quiero ir es: ",
-              orientacion_destino, "\n")
 
         # Calculamos la orientación del robot
         grados = self.read_gyro()
@@ -483,7 +456,7 @@ class Robot:
             # time.sleep(4)
 
             # print ("Giro: ", self.acciones[(self.orientation_robot, orientacion_destino)])
-            # print ("Girdo destino: ", self.orientaciones[orientacion_destino])
+            # print ("Giro destino: ", self.orientaciones[orientacion_destino])
             self._turnOdometry(self.acciones[(
                 self.orientation_robot, orientacion_destino)], self.orientaciones[orientacion_destino])
 
@@ -491,13 +464,12 @@ class Robot:
 
             if Map2D.detectObstacle(self, Map2D.x, Map2D.y, self.orientation_robot) == 1:
                 self.setSpeed(0, 0)
-                print("[!] Obstáculo detectado. Recalculando matriz.")
                 return -1
 
         # Obtenemos los grados y los grados que debería tener
         grados = self.read_gyro()
 
-        # Pasamos los grados de [-180, 180]
+        # Pasamos los grados a [-180, 180]
         grados = (grados + 180) % 360 - 180
 
         destino = self.orientaciones[self.orientation_robot]
@@ -506,7 +478,6 @@ class Robot:
             destino = -180
 
         # Movemos hacia adelante
-        # print("///////////////////////////////")
         # print("Mi orientacion es: ", grados)
         # print("Mi orientación destino es: ", destino)
         # print("La corrección es: ", destino - grados)
@@ -515,23 +486,49 @@ class Robot:
         self.setSpeed(0, 0)
         # self._moveCell([x_pos_ini, y_pos_ini])
 
+    def waitGyro(self):
+        """Waits for the Gyroscope to init"""
+        init = False
+        print("[...] Inicializando giroscopio.")
+        while not init:
+            try:
+                self.BP.get_sensor(self.BP.PORT_1)[0]
+                init = True
+            except brickpi3.SensorError:
+                time.sleep(0.1)
+        print("[+] Giroscopio inicializado correctamente.")
+
+    def waitSonar(self):
+        """Waits for the Sonar to init"""
+        init = False
+        print("[...] Inicializando sonar.")
+        while not init:
+            try:
+                self.BP.get_sensor(self.BP.PORT_2)
+            except brickpi3.SensorError:
+                time.sleep(0.1)
+        print("[+] Sonar inicializado correctamente.")
+
     def read_ultrasonic(self):
         """Reads ultrasonic sensor value"""
         value = 0
-        while value <= 0:
+        obtainedValue = False
+        while not obtainedValue:
             try:
                 value = self.BP.get_sensor(self.BP.PORT_2)
-                # print the distance in CM
-                # print("Sonar:", value)
+                obtainedValue = True
             except brickpi3.SensorError as error:
-                print("Error de sonar.", error)
+                print("[!] Error de sonar.", error)
         return value
 
     def read_gyro(self):
         """Reads gyro sensor value"""
         value = 0
-        try:
-            value = -self.BP.get_sensor(self.BP.PORT_1)[0]
-        except brickpi3.SensorError as error:
-            print("Error de giroscopio.", error)
+        obtainedValue = False
+        while not obtainedValue:
+            try:
+                value = -self.BP.get_sensor(self.BP.PORT_1)[0]
+                obtainedValue = True
+            except brickpi3.SensorError as error:
+                print("[!] Error de giroscopio.", error)
         return value

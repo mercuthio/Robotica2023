@@ -504,9 +504,9 @@ class Map2D:
         """Detects an obstacle with the ultrasonic sensor, returns 1"""
         dirs = {"North": 0, "East": 2, "West": 6, "South": 4}
 
-        print("Buscando obstaculos...")
         distancia = robot.read_ultrasonic()
-        print("La distancia con respeto al obstáculo de en frente es: ", distancia)
+        if self.verbose:
+            print("[!] Obstáculo detectado. Distancia:", distancia)
 
         # placeholder
         if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):
@@ -518,8 +518,8 @@ class Map2D:
             # Corregimos la distancia para quedarnos a justo 13 cm del obstaculo
             if abs(distancia - distancia_optima) > 0.5:
                 time.sleep(1)
-                robot.setSpeed((distancia - distancia_optima) / 2, 0)
-                time.sleep(2)
+                robot.setSpeed((distancia - distancia_optima), 0)
+                time.sleep(1)
                 robot.setSpeed(0, 0)
 
             return 1
@@ -531,6 +531,7 @@ class Map2D:
         """Main procedure"""
 
         robot.waitGyro()
+        robot.waitSonar()
 
         self.x = x_ini
         self.y = y_ini
@@ -552,8 +553,6 @@ class Map2D:
             if out == -1:
                 step = 0
                 self.replanPath(x_goal, y_goal)
-                # robot.goTo(self, self.x, self.y,
-                #    self.currentPath[step][0], self.currentPath[step][1])
                 continue
 
             self.x = self.currentPath[step][0]
