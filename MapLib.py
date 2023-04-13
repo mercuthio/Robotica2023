@@ -502,18 +502,34 @@ class Map2D:
 
     def detectObstacle(self, robot, x_actual, y_actual, dir):
         """Detects an obstacle with the ultrasonic sensor, returns 1"""
+        dirs = {"North": 0, "East": 2, "West": 6, "South": 4}
+
+        print("Buscando obstaculos...")
         distancia = robot.read_ultrasonic()
-        if distancia < 30:  # placeholder
+        print("La distancia con respeto al obstáculo de en frente es: ", distancia)
+
+        if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):  # placeholder
             # Ponemos un muro delante de nuestra posicion actual
-            dirs = {"North": 0, "East": 2, "West": 6, "South": 4}
             self.deleteConnection(x_actual, y_actual, dirs[dir])
+
+            distancia_optima = 15
+
+            # Corregimos la distancia para quedarnos a justo 13 cm del obstaculo
+            if abs(distancia - distancia_optima) > 0.5:
+                time.sleep(1)
+                robot.setSpeed((distancia - distancia_optima) / 2, 0)
+                time.sleep(2)
+                robot.setSpeed(0, 0)
+
             return 1
         return -1
 
     # GO -------------------------------------------------------------------------------
 
-    def go(self, robot, x_goal, y_goal):
+    def go(self, robot, x_ini, y_ini, x_goal, y_goal):
         """Main procedure"""
+        self.x = x_ini
+        self.y = y_ini
         self.fillCostMatrix(self.x, self.y, x_goal, y_goal)
 
         # Calculo el camino desde la posicion actual hasta la posicion objetivo
@@ -530,11 +546,12 @@ class Map2D:
                              self.currentPath[step][0], self.currentPath[step][1])
 
             if out == -1:
-                self.replanPath(x_goal, y_goal)
                 step = 0
-                robot.goTo(self, self.x, self.y,
-                           self.currentPath[step][0], self.currentPath[step][1])
-
+                self.replanPath(x_goal, y_goal)
+                # robot.goTo(self, self.x, self.y,
+                        #    self.currentPath[step][0], self.currentPath[step][1])
+                continue
+            
             self.x = self.currentPath[step][0]
             self.y = self.currentPath[step][1]
 

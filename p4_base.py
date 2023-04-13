@@ -17,12 +17,15 @@ def main(args):
         # 1. launch updateOdometry thread()
         robot.startOdometry()
 
+
         map_file = "maps/" + args.map
         myMap = Map2D(map_file)
 
         # myMap.drawMap(saveSnapshot=False)
 
-        myMap.go(robot, 2, 0)
+        robot.esperar_giroscopio()
+
+        myMap.go(robot, 0, 0, 6, 0)
 
         # myMap.fillCostMatrix(0, 0, 2, 0)
         # myMap.planPath(0, 0, 2, 0)

@@ -51,6 +51,9 @@ class Robot:
                                      self.BP.get_motor_encoder(self.BP.PORT_B))
         self.BP.offset_motor_encoder(self.BP.PORT_C,
                                      self.BP.get_motor_encoder(self.BP.PORT_C))
+        # Configure gyro
+        self.BP.set_sensor_type(
+            self.BP.PORT_1, self.BP.SENSOR_TYPE.EV3_GYRO_ABS_DPS)
 
         ##################################################
         # odometry shared memory values
@@ -89,6 +92,24 @@ class Robot:
             ("West", "South"): 90,
             ("West", "East"): 180
         }
+
+        self.orientaciones = {
+            ("North"): 0,
+            ("South"): 180,
+            ("East"): -90,
+            ("West"): 90
+        }
+
+    def esperar_giroscopio(self):
+        value = 1
+        while value != 0:
+            try:
+                self.BP.get_sensor(self.BP.PORT_1)[0]
+                value = 0
+            except brickpi3.SensorError as error:
+                print(error)
+                self.setSpeed(0, 0)
+                time.sleep(0.1)
 
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
@@ -149,6 +170,8 @@ class Robot:
                 self.R * (np.radians(diferencia_C) + np.radians(diferencia_B))) / 2
             self.w.value = (self.R * (np.radians(diferencia_C) -
                                       np.radians(diferencia_B))) / self.L
+
+            # print("Girscopio",BP.get_sensor(BP.PORT_1))
 
             As = self.v.value * self.P
             Ath = self.w.value * self.P
@@ -351,11 +374,18 @@ class Robot:
         self.BP.set_motor_dps(self.BP.PORT_A, 0)
 
     def _moveCell(self, pos_ini):
-        # prueba
+
+        # change es la distancia que lleva movido el robot hasta su siguiente
+        # objetivo
         change = self._getPosChange(pos_ini)
+
+        min_vel = 8
+        max_vel = self.B / 4
+
         while change < self.B:
-            self.setSpeed((self.B - change) / 2.0, 0)
-            time.sleep(0.01)
+            v = np.clip((self.B - change) / 2, min_vel, max_vel)
+            self.setSpeed(v, 0)
+            time.sleep(0.001)
             change = self._getPosChange(pos_ini)
         self.setSpeed(0, 0)
 
@@ -375,7 +405,53 @@ class Robot:
         else:  # grados < 315
             self.orientation_robot = "East"
 
+    def _turnOdometry(self, sentido_giro, destino):
+
+        if (sentido_giro > 0):
+            print("Voy a girar hacia la izquierda a velocidad",
+                  abs(sentido_giro / 4))
+        else:
+            print("Voy a girar hacia la derecha a velocidad",
+                  abs(sentido_giro / 4))
+
+        self.setSpeed(0, np.radians(sentido_giro / 3.0))
+
+        theta = -self.read_gyro()
+        if (theta < 0):
+            theta = theta % 360
+            theta = theta - 360
+        else:
+            theta = theta % 360
+
+        print("Mi orientación actual es: ", theta, "\n")
+        print("La orientación a la que quiero ir es: ", destino, "\n")
+
+        if destino == 180 and theta < 0:
+            destino = -180
+
+        if theta - destino > 0:
+            while theta - destino > 0.5:
+                theta = -self.read_gyro()
+                if (theta < 0):
+                    theta = theta % 360
+                    theta = theta - 360
+                else:
+                    theta = theta % 360
+        else:
+            while theta - destino < -0.5:
+                theta = -self.read_gyro()
+                if (theta < 0):
+                    theta = theta % 360
+                    theta = theta - 360
+                else:
+                    theta = theta % 360
+
+        print("Angulo final de Gyro:", theta)
+        self.setSpeed(0, 0)
+
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
+        print("INICIANDO TRAYECTORIA DESDE", x_ini,
+              y_ini, "HASTA", x_next, y_next)
         """Goes to a position next from ini"""
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
@@ -389,21 +465,31 @@ class Robot:
             else:
                 orientacion_destino = "West"
 
-        # Calculamos la orientación del robot
-        x_pos_ini, y_pos_ini, grados = self.readOdometry()
+        print("\nLa orientación a la que quiero ir es: ",
+              orientacion_destino, "\n")
 
+        # Calculamos la orientación del robot
+        x_pos_ini, y_pos_ini, _ = self.readOdometry()
+        grados = -self.read_gyro()
         grados = grados % 360
 
         self._defineOrientation(grados)
 
-        print("New orientation:", self.orientation_robot,
-              "| theta change:", grados)
-
         # Si acciones contiene el elemento...
         if (self.orientation_robot, orientacion_destino) in self.acciones:
-            self.setSpeed(0, np.radians(
-                self.acciones[(self.orientation_robot, orientacion_destino)] / 2))
-            time.sleep(2)
+
+            # Establecemos la velocidad de giro
+            # self.setSpeed(0, np.radians(
+            #       self.acciones[(self.orientation_robot, orientacion_destino)] / 4))
+
+            # Esperamos a que gire
+            # time.sleep(4)
+
+            # print ("Giro: ", self.acciones[(self.orientation_robot, orientacion_destino)])
+            # print ("Girdo destino: ", self.orientaciones[orientacion_destino])
+            self._turnOdometry(self.acciones[(
+                self.orientation_robot, orientacion_destino)], self.orientaciones[orientacion_destino])
+
             self.orientation_robot = orientacion_destino
 
             if Map2D.detectObstacle(self, Map2D.x, Map2D.y, self.orientation_robot) == 1:
@@ -411,10 +497,28 @@ class Robot:
                 print("[!] Obstáculo detectado. Recalculando matriz.")
                 return -1
 
+        # Obtenemos los grados y los grados que debería tener
+        grados = -self.read_gyro()
+        if (grados < 0):
+            grados = grados % 360
+            grados = grados - 360
+        else:
+            grados = grados % 360
+
+        destino = self.orientaciones[self.orientation_robot]
+
+        if destino == 180 and grados < 0:
+            destino = -180
+
         # Movemos hacia adelante
-        # self.setSpeed(40 / 4, 0)
-        # time.sleep(4)
-        self._moveCell([x_pos_ini, y_pos_ini])
+        print("///////////////////////////////")
+        print("Mi orientacion es: ", grados)
+        print("Mi orientación destino es: ", destino)
+        print("La corrección es: ", destino - grados)
+        self.setSpeed(40 / 4, np.radians((destino - grados) / 4))
+        time.sleep(4)
+        self.setSpeed(0, 0)
+        # self._moveCell([x_pos_ini, y_pos_ini])
 
     def read_ultrasonic(self):
         """Reads ultrasonic sensor value"""
@@ -423,7 +527,16 @@ class Robot:
             try:
                 value = self.BP.get_sensor(self.BP.PORT_2)
                 # print the distance in CM
-                print("Sonar:", value)
+                # print("Sonar:", value)
             except brickpi3.SensorError as error:
                 print("Error de sonar.", error)
+        return value
+
+    def read_gyro(self):
+        """Reads gyro sensor value"""
+        value = 0
+        try:
+            value = self.BP.get_sensor(self.BP.PORT_1)[0]
+        except brickpi3.SensorError as error:
+            print("Error de giroscopio.", error)
         return value
