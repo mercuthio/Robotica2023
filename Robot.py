@@ -497,11 +497,8 @@ class Robot:
         # Obtenemos los grados y los grados que debería tener
         grados = self.read_gyro()
 
-        # Realizamos el módulo 360
-        if grados < 0:
-            grados = (grados % 360) - 360
-        else:
-            grados = grados % 360
+        # Pasamos los grados de [-180, 180]
+        grados = (grados + 180) % 360 - 180
 
         destino = self.orientaciones[self.orientation_robot]
 
