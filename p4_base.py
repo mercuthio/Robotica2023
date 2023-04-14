@@ -23,7 +23,8 @@ def main(args):
         # myMap.drawMap(saveSnapshot=False)
 
         start_pos = [0, 0]
-        finish_pos = [myMap.sizeX - 1, 0]
+        # finish_pos = [myMap.sizeX - 1, 0]
+        finish_pos = [2, 0]
 
         myMap.go(robot, start_pos[0], start_pos[1],
                  finish_pos[0], finish_pos[1])

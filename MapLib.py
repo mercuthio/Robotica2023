@@ -497,11 +497,11 @@ class Map2D:
         dirs = {"North": 0, "East": 2, "West": 6, "South": 4}
 
         distancia = robot.read_ultrasonic()
-        if self.verbose:
-            print("[!] Obstáculo detectado. Distancia:", distancia)
 
-        if distancia < 20 and self.isConnected(x_actual, y_actual, dirs[dir]):
+        if distancia < 20:
             # Ponemos un muro delante de nuestra posicion actual
+            if self.verbose:
+                print("[!] Obstáculo detectado. Distancia:", distancia)
             self.deleteConnection(x_actual, y_actual, dirs[dir])
 
             distancia_optima = 15

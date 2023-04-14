@@ -376,6 +376,8 @@ class Robot:
     def _turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
+        print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
+
         self.setSpeed(0, np.radians(sentido_giro / 3.0))
 
         theta = self.read_gyro()
@@ -393,14 +395,19 @@ class Robot:
             destino = -180
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea > 0.5
-        if theta - destino > 0:
-            while theta - destino > 0.5:
+        while abs(theta - destino) >= 1:
                 theta = self.read_gyro()
                 theta = (theta + 180) % 360 - 180
-        else:
-            while theta - destino < -0.5:
-                theta = self.read_gyro()
-                theta = (theta + 180) % 360 - 180
+            
+        # if theta - destino > 0:
+        #     while theta - destino >= 2:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        # else:
+        #     while theta - destino <= -2:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        #         # print("[Giro] Recalculando orientacion: ", theta, "\n")
 
         print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
@@ -411,14 +418,16 @@ class Robot:
         # Sacamos la orientación de a dónde se tiene que mover el robot
         if (x_ini == x_next):
             if (y_ini < y_next):
+                orientacion_destino = "West"
+            else:
+                orientacion_destino = "East"
+        else:
+            if (x_ini < x_next):
                 orientacion_destino = "North"
             else:
                 orientacion_destino = "South"
-        else:
-            if (x_ini < x_next):
-                orientacion_destino = "East"
-            else:
-                orientacion_destino = "West"
+        
+        print("Orientacion destino:", orientacion_destino)
 
         # Calculamos la orientación del robot
         grados = self.read_gyro()
@@ -449,8 +458,9 @@ class Robot:
         if destino == 180 and grados < 0:
             destino = -180
 
-        self.setSpeed(40 / 4, np.radians((destino - grados) / 4))
-        time.sleep(4)
+        print("[Recalculacion]:", np.radians((destino - grados) / 3))
+        self.setSpeed(40 / 3, np.radians((destino - grados) / 3))
+        time.sleep(3)
         self.setSpeed(0, 0)
 
     def waitGyro(self):
@@ -472,6 +482,7 @@ class Robot:
         while not init:
             try:
                 self.BP.get_sensor(self.BP.PORT_2)
+                init = True
             except brickpi3.SensorError:
                 time.sleep(0.1)
         print("[+] Sonar inicializado correctamente.")
