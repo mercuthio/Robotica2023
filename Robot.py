@@ -73,6 +73,8 @@ class Robot:
         self.log_file_name = datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt")
         self.log_file = open("logs/" + self.log_file_name, "w")
 
+        self.salida = "A"
+
         # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
         # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
         self.acciones = {
@@ -373,6 +375,41 @@ class Robot:
         else:  # grados < 315
             self.orientation_robot = "East"
 
+    def _moveCell(self, pos_ini):
+        """Moves to a new cell"""
+
+        change = self._getPosChange(pos_ini)
+
+        min_vel = 8.0
+        max_vel = self.B / 2.0
+
+        while (self.B - change) > 1.0:
+            v = np.clip(self.B - change, min_vel, max_vel)
+
+            theta = self.read_gyro()
+            theta = (theta + 180) % 360 - 180
+
+            destino = self.orientaciones[self.orientation_robot]
+
+            if destino == 180 and theta < 0:
+                destino = -180
+
+            print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
+
+            self.setSpeed(v, np.radians((destino - theta) / 3.0))
+
+            change = self._getPosChange(pos_ini)
+        self.setSpeed(0, 0)
+
+    def _getPosChange(self, pos_ini):
+        """Returns the global position change"""
+        x_now, y_now, _ = self.readOdometry()
+
+        if self.orientation_robot == "North" or self.orientation_robot == "South":
+            return abs(x_now - pos_ini[0])
+        else:
+            return abs(y_now - pos_ini[1])
+
     def _turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
@@ -394,8 +431,8 @@ class Robot:
         if destino == 180 and theta < 0:
             destino = -180
 
-        # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea > 0.5
-        while abs(theta - destino) >= 1:
+        # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        while abs(theta - destino) > 1.0:
             theta = self.read_gyro()
             theta = (theta + 180) % 360 - 180
 
@@ -447,21 +484,21 @@ class Robot:
                 return -1
 
         # Obtenemos los grados que debería tener
-        grados = self.read_gyro()
+        # grados = self.read_gyro()
 
         # Pasamos los grados a [-180, 180]
-        grados = (grados + 180) % 360 - 180
+        # grados = (grados + 180) % 360 - 180
 
-        destino = self.orientaciones[self.orientation_robot]
+        # destino = self.orientaciones[self.orientation_robot]
 
         # Caso especial para que el robot dé la vuelta en el sentido correcto
-        if destino == 180 and grados < 0:
-            destino = -180
+        # if destino == 180 and grados < 0:
+        #     destino = -180
 
-        print("[Recalculacion]:", np.radians((destino - grados) / 3))
-        self.setSpeed(40 / 3, np.radians((destino - grados) / 3))
-        time.sleep(3)
-        self.setSpeed(0, 0)
+        # print("[Recalculacion]:", np.radians((destino - grados) / 3))
+        # self.setSpeed(40 / 3, np.radians((destino - grados) / 3))
+        # time.sleep(3)
+        # self.setSpeed(0, 0)
 
     def waitGyro(self):
         """Waits for the Gyroscope to init"""
@@ -510,26 +547,3 @@ class Robot:
             except brickpi3.SensorError as error:
                 print("[!] Error de giroscopio.", error)
         return value
-
-# Codigo no utilizado en esta practica --------------------------------------------
-
-    def _moveCell(self, pos_ini):
-        """"""
-
-        # change es la distancia que lleva movido el robot hasta su siguiente
-        # objetivo
-        change = self._getPosChange(pos_ini)
-
-        min_vel = 8
-        max_vel = self.B / 2.0
-
-        while change < self.B:
-            v = np.clip((self.B - change) / 2.0, min_vel, max_vel)
-            self.setSpeed(v, 0)
-            change = self._getPosChange(pos_ini)
-        self.setSpeed(0, 0)
-
-    def _getPosChange(self, pos_ini):
-        ''''''
-        x_now, y_now, _ = self.readOdometry()
-        return abs(x_now - pos_ini[0] + y_now - pos_ini[1])

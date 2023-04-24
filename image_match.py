@@ -141,8 +141,8 @@ def match_images(img1_bgr, img2_bgr):
     return found
 
 
-img_r2 = cv2.imread("imagenes/R2-D2_s.png")
-img_test1 = cv2.imread("imagenes/test1.jpg")
+# img_r2 = cv2.imread("imagenes/R2-D2_s.png")
+# img_test1 = cv2.imread("imagenes/test3.jpg")
 
 
-match_images(img_r2, img_test1)
+# match_images(img_r2, img_test1)

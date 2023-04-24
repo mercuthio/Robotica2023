@@ -10,13 +10,21 @@ def main(args):
     # Inicializo el robot
     # robot = Robot()
 
-    map_file = "maps/" + args.map
+    salida = "A"
+
+    if salida == "A":
+        mapa = "mapaA_CARRERA.txt"
+        start_pos = [1, 2]
+        finish_pos = [3, 3]
+    else:  # Case Map B
+        mapa = "mapaB_CARRERA.txt"
+        start_pos = [5, 2]
+        finish_pos = [3, 3]
+
+    map_file = "maps/" + mapa
     myMap = Map2D(map_file)
 
     myMap.drawMap(saveSnapshot=False)
-
-    start_pos = [0, 0]
-    finish_pos = [myMap.sizeX - 1, 0]
 
     # myMap.go(robot, 2, 0)
 
@@ -38,7 +46,7 @@ if __name__ == "__main__":
     # Add as many args as you need ...
     parser = argparse.ArgumentParser()
     parser.add_argument("-m", "--map", help="name of the map",
-                        type=str, default="mapa1.txt")
+                        type=str, default="mapaA_CARRERA.txt")
     parser.add_argument(
         "-p", "--plot", help="plot odometry", action='store_true')
     args = parser.parse_args()
