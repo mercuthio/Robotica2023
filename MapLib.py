@@ -468,7 +468,8 @@ class Map2D:
         step = 0
 
         for step in range(0, num_steps):
-            nodos_adyacentes = self._getNeighBors(nodo_actual[0], nodo_actual[1])
+            nodos_adyacentes = self._getNeighBors(
+                nodo_actual[0], nodo_actual[1])
             if len(nodos_adyacentes) == 0:
                 return False
             # obtenemos el menor vecino

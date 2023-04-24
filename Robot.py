@@ -396,9 +396,9 @@ class Robot:
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea > 0.5
         while abs(theta - destino) >= 1:
-                theta = self.read_gyro()
-                theta = (theta + 180) % 360 - 180
-            
+            theta = self.read_gyro()
+            theta = (theta + 180) % 360 - 180
+
         # if theta - destino > 0:
         #     while theta - destino >= 2:
         #         theta = self.read_gyro()
@@ -426,7 +426,7 @@ class Robot:
                 orientacion_destino = "North"
             else:
                 orientacion_destino = "South"
-        
+
         print("Orientacion destino:", orientacion_destino)
 
         # Calculamos la orientación del robot
