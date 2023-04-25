@@ -55,6 +55,9 @@ class Robot:
         self.BP.set_sensor_type(
             self.BP.PORT_1, self.BP.SENSOR_TYPE.EV3_GYRO_ABS_DPS)
 
+        self.BP.set_sensor_type(
+            self.BP.PORT_3, self.BP.SENSOR_TYPE.NXT_LIGHT_ON)
+
         ##################################################
         # odometry shared memory values
         self.x = Value('d', 0.0)
@@ -74,6 +77,7 @@ class Robot:
         self.log_file = open("logs/" + self.log_file_name, "w")
 
         self.salida = "A"
+        self.color = ["Black", "Blue", "Green", "Yellow", "Red", "White"]
 
         # Diccionario con las posibles acciones del robot, (orientacion del robot, posicion objetivo)
         # El robot está mirando hacia [...] y su próximo movimiento está hacia [...], así que tiene que hacer [...]
@@ -410,7 +414,7 @@ class Robot:
         else:
             return abs(y_now - pos_ini[1])
 
-    def _turnOdometry(self, sentido_giro, destino):
+    def turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
         print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
@@ -432,19 +436,9 @@ class Robot:
             destino = -180
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        while abs(theta - destino) > 1.0:
+        while abs(theta - destino) >= 1.0:
             theta = self.read_gyro()
             theta = (theta + 180) % 360 - 180
-
-        # if theta - destino > 0:
-        #     while theta - destino >= 2:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        # else:
-        #     while theta - destino <= -2:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        #         # print("[Giro] Recalculando orientacion: ", theta, "\n")
 
         print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
@@ -474,7 +468,7 @@ class Robot:
 
         # Si acciones contiene el elemento...
         if (self.orientation_robot, orientacion_destino) in self.acciones:
-            self._turnOdometry(self.acciones[(
+            self.turnOdometry(self.acciones[(
                 self.orientation_robot, orientacion_destino)], self.orientaciones[orientacion_destino])
 
             self.orientation_robot = orientacion_destino
@@ -524,6 +518,18 @@ class Robot:
                 time.sleep(0.1)
         print("[+] Sonar inicializado correctamente.")
 
+    def waitLight(self):
+        """Waits for the Sonar to init"""
+        init = False
+        print("[...] Inicializando sensor de luz.")
+        while not init:
+            try:
+                self.BP.get_sensor(self.BP.PORT_4)
+                init = True
+            except brickpi3.SensorError:
+                time.sleep(0.1)
+        print("[+] Sensor de luz inicializado correctamente.")
+
     def read_ultrasonic(self):
         """Reads ultrasonic sensor value"""
         value = 0
@@ -547,3 +553,17 @@ class Robot:
             except brickpi3.SensorError as error:
                 print("[!] Error de giroscopio.", error)
         return value
+
+    def read_luminosity(self):
+        '''Reads light sensor value'''
+        value = 0
+        obtainedValue = False
+        while not obtainedValue:
+            try:
+                value = self.BP.get_sensor(self.BP.PORT_3)
+                if value > 2700:
+                    return "Black"
+                else:
+                    return "White"
+            except brickpi3.SensorError as error:
+                print("[!] Error de sensor de luz.", error)

@@ -522,7 +522,6 @@ class Map2D:
         """Main procedure"""
 
         # Esperamos a que se inicien el giroscopio y el sonar
-        robot.waitGyro()
         robot.waitSonar()
 
         # Iniciamos la celda del robot actual al inicio

@@ -10,23 +10,16 @@ def main(args):
     # Inicializo el robot
     # robot = Robot()
 
-    salida = "A"
-
-    if salida == "A":
-        mapa = "mapaA_CARRERA.txt"
-        start_pos = [1, 2]
-        finish_pos = [3, 3]
-    else:  # Case Map B
-        mapa = "mapaB_CARRERA.txt"
-        start_pos = [5, 2]
-        finish_pos = [3, 3]
-
-    map_file = "maps/" + mapa
+    map_file = "maps/" + args.map
     myMap = Map2D(map_file)
 
     myMap.drawMap(saveSnapshot=False)
 
     # myMap.go(robot, 2, 0)
+
+    start_pos = [0, 0]
+    # finish_pos = [myMap.sizeX - 1, 0]
+    finish_pos = [2, 0]
 
     myMap.fillCostMatrix(start_pos[0], start_pos[1],
                          finish_pos[0], finish_pos[1])

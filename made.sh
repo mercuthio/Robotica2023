@@ -1,6 +1,6 @@
 #!/bin/bash
 
-directorio_remoto="Robotica_test_files/practica4/"
+directorio_remoto="Robotica_test_files/trabajo/"
 ip_remota="10.1.31.226"
 usuario="pi"
 

@@ -8,6 +8,7 @@ from Robot import Robot
 from MapLib import Map2D
 from plotManager import generatePlot
 from image_match import match_images
+from RacePhases import slalom
 
 
 def main(args):
@@ -18,78 +19,87 @@ def main(args):
         # Launch updateOdometry thread()
         robot.startOdometry()
 
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 0: READ COLOR
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        # Init gyro and light sensor
+        robot.waitGyro()
+        robot.waitLight()
+
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                    PHASE 0: READ COLOR                ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         # Read color from sensor
-
-        robot.salida = "A"
-
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 1: SLALOM
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-        # No entiendo la orientacion xd
-
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 2: MAP NAVIGATION
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-        if robot.salida == "A":
-            mapa = "mapaA_CARRERA.txt"
-            start_pos = [1, 2]
-            finish_pos = [4, 3]
-        else:  # Case Map B
-            mapa = "mapaB_CARRERA.txt"
-            start_pos = [5, 2]
-            finish_pos = [2, 3]
-
-        map_file = "maps/" + mapa
-        myMap = Map2D(map_file)
-        myMap.go(robot, start_pos[0], start_pos[1],
-                 finish_pos[0], finish_pos[1])
-
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 3: DETECT EXIT
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-        if robot.salida == "A":
-            img_robot = cv2.imread("imagenes/R2-D2_s.png")
+        color = robot.read_luminosity()
+        if color == "White":
+            robot.salida = "A"
         else:
-            img_robot = cv2.imread("imagenes/BB8_s.png")
+            robot.salida = "B"
 
-        cam = VideoCapture(0)
-        cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        print("[c] Color de la cartulina:", color)
 
-        # Get 3 images
-        _, img = cam.read()
-        _, img = cam.read() if img is None else img
-        _, img = cam.read() if img is None else img
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                    PHASE 1: SLALOM                    ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        match_images(img_robot, img)
+        if robot.salida == "A":  # Mapa A
+            # Empieza girando a la derecha
+            slalom(robot, "A")
 
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 4: GET RED BALL
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        else:  # Mapa B
+            # Empieza girando a la derecha
+            slalom(robot, "B")
 
-        targetSize = 230
-        target = 320
-        robot.trackObject(targetSize, target, colorRangeMin=[
-            0, 0, 0], colorRangeMax=[255, 255, 255])
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                  PHASE 2: MAP NAVIGATION              ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #                     PHASE 4: LEAVE
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        # if robot.salida == "A":
+        #     mapa = "mapaA_CARRERA.txt"
+        #     start_pos = [1, 2]
+        #     finish_pos = [4, 3]
+        # else:  # Case Map B
+        #     mapa = "mapaB_CARRERA.txt"
+        #     start_pos = [5, 2]
+        #     finish_pos = [2, 3]
 
-        # Hola buenas tardes como estamos
+        # map_file = "maps/" + mapa
+        # myMap = Map2D(map_file)
+        # myMap.go(robot, start_pos[0], start_pos[1],
+        #          finish_pos[0], finish_pos[1])
 
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-        #               PHASE 5: KILL PUERRO AND STOP
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                 PHASE 3: DETECT EXIT                  ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # This currently unconfigure the sensors, disable the motors,
-        # and restore the LED to the control of the BrickPi3 firmware.
+        # if robot.salida == "A":
+        #     img_robot = cv2.imread("imagenes/R2-D2_s.png")
+        # else:
+        #     img_robot = cv2.imread("imagenes/BB8_s.png")
+
+        # cam = VideoCapture(0)
+        # cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+        # # Get 3 images
+        # _, img = cam.read()
+        # _, img = cam.read() if img is None else img
+        # _, img = cam.read() if img is None else img
+
+        # match_images(img_robot, img)
+
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                    PHASE 4: GET BALL                  ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+
+        # targetSize = 230
+        # target = 320
+        # robot.trackObject(targetSize, target, colorRangeMin=[
+        #     0, 0, 0], colorRangeMax=[255, 255, 255])
+
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+        print("                     PHASE 5: LEAVE                    ")
+        print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
+
+        # # This currently unconfigure the sensors, disable the motors,
+        # # and restore the LED to the control of the BrickPi3 firmware.
         robot.setSpeed(0, 0)
         robot.BP.reset_all()
         robot.stopOdometry()
