@@ -384,9 +384,9 @@ class Robot:
 
         change = self._getPosChange(pos_ini)
 
-        min_vel = 8.0
-        max_vel = self.B / 2.0
-
+        min_vel = 10.0
+        max_vel = 15.0
+        print(self.B - change)
         while (self.B - change) > 1.0:
             v = np.clip(self.B - change, min_vel, max_vel)
 
@@ -398,7 +398,7 @@ class Robot:
             if destino == 180 and theta < 0:
                 destino = -180
 
-            print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
+            # print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
 
             self.setSpeed(v, np.radians((destino - theta) / 3.0))
 
@@ -419,7 +419,7 @@ class Robot:
 
         print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
 
-        self.setSpeed(0, np.radians(sentido_giro / 3.0))
+        self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
         theta = self.read_gyro()
 
@@ -477,22 +477,8 @@ class Robot:
                 self.setSpeed(0, 0)
                 return -1
 
-        # Obtenemos los grados que debería tener
-        # grados = self.read_gyro()
-
-        # Pasamos los grados a [-180, 180]
-        # grados = (grados + 180) % 360 - 180
-
-        # destino = self.orientaciones[self.orientation_robot]
-
-        # Caso especial para que el robot dé la vuelta en el sentido correcto
-        # if destino == 180 and grados < 0:
-        #     destino = -180
-
-        # print("[Recalculacion]:", np.radians((destino - grados) / 3))
-        # self.setSpeed(40 / 3, np.radians((destino - grados) / 3))
-        # time.sleep(3)
-        # self.setSpeed(0, 0)
+        pos_ini = self.readOdometry()
+        self._moveCell(pos_ini)
 
     def waitGyro(self):
         """Waits for the Gyroscope to init"""
@@ -524,7 +510,7 @@ class Robot:
         print("[...] Inicializando sensor de luz.")
         while not init:
             try:
-                self.BP.get_sensor(self.BP.PORT_4)
+                self.BP.get_sensor(self.BP.PORT_3)
                 init = True
             except brickpi3.SensorError:
                 time.sleep(0.1)

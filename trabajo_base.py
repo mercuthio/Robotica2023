@@ -8,7 +8,7 @@ from Robot import Robot
 from MapLib import Map2D
 from plotManager import generatePlot
 from image_match import match_images
-from RacePhases import slalom
+from RacePhases import * 
 
 
 def main(args):
@@ -52,19 +52,19 @@ def main(args):
         print("                  PHASE 2: MAP NAVIGATION              ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # if robot.salida == "A":
-        #     mapa = "mapaA_CARRERA.txt"
-        #     start_pos = [1, 2]
-        #     finish_pos = [4, 3]
-        # else:  # Case Map B
-        #     mapa = "mapaB_CARRERA.txt"
-        #     start_pos = [5, 2]
-        #     finish_pos = [2, 3]
+        if robot.salida == "A":
+            mapa = "mapaA_CARRERA.txt"
+            start_pos = [1, 2]
+            finish_pos = [4, 3]
+        else:  # Case Map B
+            mapa = "mapaB_CARRERA.txt"
+            start_pos = [5, 2]
+            finish_pos = [2, 3]
 
-        # map_file = "maps/" + mapa
-        # myMap = Map2D(map_file)
-        # myMap.go(robot, start_pos[0], start_pos[1],
-        #          finish_pos[0], finish_pos[1])
+        map_file = "maps/" + mapa
+        myMap = Map2D(map_file)
+        myMap.go(robot, start_pos[0], start_pos[1],
+                finish_pos[0], finish_pos[1])
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                 PHASE 3: DETECT EXIT                  ")
