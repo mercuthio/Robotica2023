@@ -1,6 +1,8 @@
 import numpy as np
 import time
 from Robot import Robot
+from image_match import match_images
+
 
 def slalom(robot, id):
     """Performs a slalom depending on the id"""
@@ -38,3 +40,11 @@ def fix_position(robot):
     robot.setSpeed(distancia - distancia_optima, 0)
     time.sleep(1)
     robot.setSpeed(0, 0)
+
+
+def check_output(robot_img, test_img):
+    found, w_pos = match_images(robot_img, test_img)
+    if found == True:
+        image_width = test_img.shape[1]
+        print(w_pos, image_width / 2)
+        return "izquierda" if w_pos < (image_width / 2) else "derecha"

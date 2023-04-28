@@ -121,22 +121,25 @@ def match_images(img1_bgr, img2_bgr):
             print("NOT enough ROBUST matches found - %d (required %d)" %
                   (num_robust_matches, MIN_MATCH_OBJECTFOUND))
             return found, -1
-        
+
         h, w = img1.shape
 
-        middle_point = np.float32([ [(w-1)/2,(h-1)/2] ]).reshape(-1,1,2)
+        middle_point = np.float32([[(w-1)/2, (h-1)/2]]).reshape(-1, 1, 2)
         middle_point_dst = cv2.perspectiveTransform(middle_point, H_21)
 
-        if DEBUG: 
-            pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+        if DEBUG:
+            pts = np.float32([[0, 0], [0, h-1], [w-1, h-1],
+                             [w-1, 0]]).reshape(-1, 1, 2)
             dst = cv2.perspectiveTransform(pts, H_21)
-            img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-            draw_params = dict(matchColor = (0,255,0), # draw matches in green color
-                    singlePointColor = None,
-                    matchesMask = matchesMask, # draw only inliers
-                    flags = 2)
-            img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
-            plt.imshow(img3, 'gray'),plt.show()
+            img2 = cv2.polylines(
+                img2, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
+            draw_params = dict(matchColor=(0, 255, 0),  # draw matches in green color
+                               singlePointColor=None,
+                               matchesMask=matchesMask,  # draw only inliers
+                               flags=2)
+            img3 = cv2.drawMatches(img1, kp1, img2, kp2,
+                                   good, None, **draw_params)
+            plt.imshow(img3, 'gray'), plt.show()
             cv2.waitKey(0)
 
         found = True

@@ -8,7 +8,7 @@ from Robot import Robot
 from MapLib import Map2D
 from plotManager import generatePlot
 from image_match import match_images
-from RacePhases import * 
+from RacePhases import *
 
 
 def main(args):
@@ -64,26 +64,26 @@ def main(args):
         map_file = "maps/" + mapa
         myMap = Map2D(map_file)
         myMap.go(robot, start_pos[0], start_pos[1],
-                finish_pos[0], finish_pos[1])
+                 finish_pos[0], finish_pos[1])
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                 PHASE 3: DETECT EXIT                  ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # if robot.salida == "A":
-        #     img_robot = cv2.imread("imagenes/R2-D2_s.png")
-        # else:
-        #     img_robot = cv2.imread("imagenes/BB8_s.png")
+        if robot.salida == "A":
+            img_robot = cv2.imread("imagenes/R2-D2_s.png")
+        else:
+            img_robot = cv2.imread("imagenes/BB8_s.png")
 
-        # cam = VideoCapture(0)
-        # cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        cam = VideoCapture(0)
+        cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-        # # Get 3 images
-        # _, img = cam.read()
-        # _, img = cam.read() if img is None else img
-        # _, img = cam.read() if img is None else img
+        # Get 3 images
+        _, img = cam.read()
+        _, img = cam.read() if img is None else img
+        _, img = cam.read() if img is None else img
 
-        # match_images(img_robot, img)
+        pos = check_output(img_robot, img)
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 4: GET BALL                  ")
