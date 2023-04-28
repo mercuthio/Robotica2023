@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import pyplot as plt
 
 # Para mostrar imagen con matches
 DEBUG = 1
@@ -113,19 +114,35 @@ def match_images(img1_bgr, img2_bgr):
             [kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
         H_21, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 3.0)
         matchesMask = mask.ravel().tolist()
+
         num_robust_matches = np.sum(matchesMask)
         if num_robust_matches < MIN_MATCH_OBJECTFOUND:
             found = False
             print("NOT enough ROBUST matches found - %d (required %d)" %
                   (num_robust_matches, MIN_MATCH_OBJECTFOUND))
-            return found
+            return found, -1
+        
         h, w = img1.shape
-        pts = np.float32([[0, 0], [0, h-1], [w-1, h-1],
-                         [w-1, 0]]).reshape(-1, 1, 2)
-        dst = cv2.perspectiveTransform(pts, H_21)
+
+        middle_point = np.float32([ [(w-1)/2,(h-1)/2] ]).reshape(-1,1,2)
+        middle_point_dst = cv2.perspectiveTransform(middle_point, H_21)
+
+        if DEBUG: 
+            pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+            dst = cv2.perspectiveTransform(pts, H_21)
+            img2 = cv2.polylines(img2,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+            draw_params = dict(matchColor = (0,255,0), # draw matches in green color
+                    singlePointColor = None,
+                    matchesMask = matchesMask, # draw only inliers
+                    flags = 2)
+            img3 = cv2.drawMatches(img1,kp1,img2,kp2,good,None,**draw_params)
+            plt.imshow(img3, 'gray'),plt.show()
+            cv2.waitKey(0)
+
         found = True
         print("ROBUST matches found - %d (out of %d) --> OBJECT FOUND" %
               (np.sum(matchesMask), len(good)))
+        return found, middle_point_dst[0][0][0]
     else:
         print("Not enough initial matches are found - %d (required %d)" %
               (len(good), MIN_MATCH_COUNT))
@@ -138,11 +155,11 @@ def match_images(img1_bgr, img2_bgr):
         cv2.imshow("INLIERS", img3)
         cv2.waitKey(0)  # WAIT is run outside
 
-    return found
+    return found, -1
 
 
 # img_r2 = cv2.imread("imagenes/R2-D2_s.png")
-# img_test1 = cv2.imread("imagenes/test3.jpg")
+# img_test1 = cv2.imread("imagenes/test1.jpg")
 
 
 # match_images(img_r2, img_test1)
