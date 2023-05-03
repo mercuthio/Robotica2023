@@ -1,6 +1,8 @@
 import numpy as np
 import time
+import cv2
 from Robot import Robot
+from cv2 import VideoCapture
 from image_match import match_images
 
 
@@ -37,9 +39,29 @@ def fix_position(robot):
     robot.setSpeed(0, 0)
 
 
-def check_output(robot_img, test_img):
-    found, w_pos = match_images(robot_img, test_img)
-    if found == True:
-        image_width = test_img.shape[1]
-        print(w_pos, image_width / 2)
-        return "izquierda" if w_pos < (image_width / 2) else "derecha"
+def fix_position2(robot):
+    robot.turnOdometry(-60, 60)
+
+
+def get_img(cam):
+    _, img = cam.read()
+    while img is None:
+        print("Aupa")
+        _, img = cam.read()
+    return img
+
+
+def check_output(cam, robot_img_r2, robot_img_bb8, mapa):
+
+    test_img = get_img(cam)
+
+    found_r2, w_pos_r2 = match_images(robot_img_r2, test_img)
+    found_bb8, w_pos_bb8 = match_images(robot_img_bb8, test_img)
+
+    if found_r2 and found_bb8:
+        if mapa == "A":
+            return "izquierda" if w_pos_r2 < w_pos_bb8 else "derecha"
+        else:
+            return "izquierda" if w_pos_bb8 < w_pos_r2 else "derecha"
+    else:
+        return "No encontrado"

@@ -1,5 +1,4 @@
 import cv2
-from cv2 import VideoCapture
 import numpy as np
 import time
 
@@ -47,22 +46,18 @@ if int(ver[0]) < 3:
 else:
     detector2 = cv2.SimpleBlobDetector_create(params)
 
-cam = VideoCapture(0)
-# cam = VideoCapture('http://192.168.7.172:8080/video')
-cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-
-def get_img():
+def get_img(cam):
     _, img = cam.read()
     return img
 
 
-def get_red(show):
+def get_red(cam, show):
 
     # Toma una foto
-    img = get_img()
-    img = get_img() if img is None else img
-    img = get_img() if img is None else img
+    img = get_img(cam)
+    img = get_img(cam) if img is None else img
+    img = get_img(cam) if img is None else img
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -81,12 +76,12 @@ def get_red(show):
         return False
 
 
-def get_blob(show):
+def get_blob(cam, show):
 
     # Toma una foto
-    img = get_img()
-    img = get_img() if img is None else img
-    img = get_img() if img is None else img
+    img = get_img(cam)
+    img = get_img(cam) if img is None else img
+    img = get_img(cam) if img is None else img
 
     # Debug para mostrar fotos sacadas
     # cv2.imshow("Keypoints on RED", img)

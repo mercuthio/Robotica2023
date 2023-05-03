@@ -209,7 +209,7 @@ class Robot:
         self.log_file.close()
         # self.BP.reset_all()
 
-    def trackObject(self, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
+    def trackObject(self, cam, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
         """Tracks the object until the robot can catch it"""
 
         finished = False
@@ -230,7 +230,7 @@ class Robot:
             while not targetFound:
 
                 # Da vueltras buscando la pelota
-                blob = get_blob(False)
+                blob = get_blob(cam, False)
 
                 # Si ha encontrado la pelota, sale del bucle
                 if (blob != -1):
@@ -311,16 +311,16 @@ class Robot:
 
                         # Se comprueba si se ha obtenido la pelota
 
-                        blob_red = get_red(False)
-                        blob_red = get_red(False)
+                        blob_red = get_red(cam, False)
+                        blob_red = get_red(cam, False)
 
                         if blob_red:
                             self.setSpeed(0, np.radians(-90))
                             time.sleep(1)
                             self.setSpeed(0, 0)
 
-                            blob_red = get_red(False)
-                            blob_red = get_red(False)
+                            blob_red = get_red(cam, False)
+                            blob_red = get_red(cam, False)
 
                             # Si ve bastante rojo, la ha cogido
                             if blob_red:
@@ -334,7 +334,7 @@ class Robot:
                                 targetPositionReached = True
                                 targetFound = False
                                 # Marcha atrás para mejorar visión
-                                blob = get_blob(False)
+                                blob = get_blob(cam, False)
 
                             self.setSpeed(0, np.radians(90))
                             time.sleep(1)
@@ -345,7 +345,7 @@ class Robot:
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
-                blob = get_blob(False)
+                blob = get_blob(cam, False)
                 if (blob == -1):
                     targetFound = False
                     break

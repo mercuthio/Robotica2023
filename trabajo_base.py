@@ -22,6 +22,9 @@ def main(args):
         robot.waitGyro()
         robot.waitLight()
 
+        cam = VideoCapture(0)
+        cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 0: READ COLOR                ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
@@ -54,11 +57,11 @@ def main(args):
         if robot.salida == "A":
             mapa = "mapaA_CARRERA.txt"
             start_pos = [1, 2]
-            finish_pos = [4, 3]
+            finish_pos = [3, 4]
         else:  # Case Map B
             mapa = "mapaB_CARRERA.txt"
             start_pos = [5, 2]
-            finish_pos = [2, 3]
+            finish_pos = [3, 4]
 
         map_file = "maps/" + mapa
         myMap = Map2D(map_file)
@@ -69,20 +72,12 @@ def main(args):
         print("                 PHASE 3: DETECT EXIT                  ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        if robot.salida == "A":
-            img_robot = cv2.imread("imagenes/R2-D2_s.png")
-        else:
-            img_robot = cv2.imread("imagenes/BB8_s.png")
+        fix_position2(robot)
 
-        # cam = VideoCapture(0)
-        # cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        img_r2 = cv2.imread("imagenes/R2-D2_s.png")
+        img_bb8 = cv2.imread("imagenes/BB8_s.png")
 
-        # Get 3 images
-        # _, img = cam.read()
-        # _, img = cam.read() if img is None else img
-        # _, img = cam.read() if img is None else img
-
-        # pos = check_output(img_robot, img)
+        check_output(cam, img_r2, img_bb8, robot.salida)
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 4: GET BALL                  ")
@@ -90,7 +85,7 @@ def main(args):
 
         targetSize = 230
         target = 320
-        robot.trackObject(targetSize, target, colorRangeMin=[
+        robot.trackObject(cam, targetSize, target, colorRangeMin=[
             0, 0, 0], colorRangeMax=[255, 255, 255])
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")

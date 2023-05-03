@@ -6,7 +6,6 @@ import numpy as np
 import time
 from Robot import Robot
 from MapLib import Map2D
-from plotManager import generatePlot
 
 
 def main(args):
@@ -40,9 +39,6 @@ def main(args):
         robot.setSpeed(0, 0)
         robot.BP.reset_all()
         robot.stopOdometry()
-
-        if args.plot:
-            generatePlot(robot.log_file_name)
 
     except KeyboardInterrupt:
         # except the program gets interrupted by Ctrl+C on the keyboard.
