@@ -7,30 +7,25 @@ from image_match import match_images
 def slalom(robot, id):
     """Performs a slalom depending on the id"""
     if id == "A":
-        robot.turnOdometry(-90, -90)
+        robot.turnOdometry(-90, -180)
 
         robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
         time.sleep(8)
         robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
         time.sleep(8)
-
-        robot.turnOdometry(20, -90)
+        robot.turnOdometry(20, -180)
         fix_position(robot)
-        robot.turnOdometry(90, 90)
-        robot.BP.reset_sensor(robot.BP.PORT_1)
-
+        robot.turnOdometry(90, 0)
     else:
-        robot.turnOdometry(90, 90)
 
         robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
         time.sleep(8)
         robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
         time.sleep(8)
 
-        robot.turnOdometry(-10, -90)
+        robot.turnOdometry(-10, 0)
         fix_position(robot)
-        robot.turnOdometry(90, 90)
-        robot.BP.reset_sensor(robot.BP.PORT_1)
+        robot.turnOdometry(-90, -180)
 
 
 def fix_position(robot):
