@@ -424,6 +424,8 @@ class Robot:
         theta = self.read_gyro()
         theta = (theta + 180) % 360 - 180
 
+        orientacion_sur = True if (theta < -135 or theta > 135) else False
+
         # print("theta inicial: ", theta)
 
         # Caso especial para que el robot dé la vuelta en el sentido correcto
@@ -460,7 +462,10 @@ class Robot:
             # print("Sentido de giro: ", sentido_giro)
             # print("theta: ", theta)
             # print("destino: ", destino)
+            # if orientacion_sur:
             time.sleep(0.5)
+            theta = self.read_gyro()
+            theta = (theta + 180) % 360 - 180
             if sentido_giro < 0:
                 while theta > destino:
                     # print("Sentido de giro A")
