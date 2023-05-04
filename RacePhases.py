@@ -32,7 +32,7 @@ def slalom(robot, id):
 
 def fix_position(robot):
     distancia = robot.read_ultrasonic()
-    distancia_optima = 55
+    distancia_optima = 52
 
     robot.setSpeed(distancia - distancia_optima, 0)
     time.sleep(1)
@@ -43,10 +43,13 @@ def fix_position2(robot):
     robot.turnOdometry(-60, 60)
 
 
+def fix_positiontest(robot):
+    robot.turnOdometry(30, 30)
+
+
 def get_img(cam):
     _, img = cam.read()
     while img is None:
-        print("Aupa")
         _, img = cam.read()
     return img
 

@@ -24,14 +24,12 @@ def check_output(robot_img_r2, robot_img_bb8, test_img, mapa):
     else:
         return "No encontrado"
 
-# Se podria hacer el match con los dos robots y en base a cual es el mayor
-# saber cual esta a la derecha o a la izquierda. Acertaria siempre pero tendria
-# el doble de coste
-
 
 img_r2 = cv2.imread("imagenes/R2-D2_s.png")
 img_bb8 = cv2.imread("imagenes/BB8_s.png")
 
-img_test = get_img()
+cam = VideoCapture(0)
+cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
+img_test = get_img(cam)
 print(check_output(img_r2, img_bb8, img_test, "A"))

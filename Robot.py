@@ -315,8 +315,8 @@ class Robot:
                         blob_red = get_red(cam, False)
 
                         if blob_red:
-                            self.setSpeed(0, np.radians(-90))
-                            time.sleep(1)
+                            # self.setSpeed(0, np.radians(-90))
+                            # time.sleep(1)
                             self.setSpeed(0, 0)
 
                             blob_red = get_red(cam, False)
@@ -334,13 +334,14 @@ class Robot:
                                 targetPositionReached = True
                                 targetFound = False
                                 # Marcha atrás para mejorar visión
+                                self.uncatch()
                                 blob = get_blob(cam, False)
 
-                            self.setSpeed(0, np.radians(90))
-                            time.sleep(1)
+                            # self.setSpeed(0, np.radians(90))
+                            # time.sleep(1)
                             self.setSpeed(0, 0)
-                            time.sleep(3)
-                            self.uncatch()
+                            # time.sleep(3)
+                            # self.uncatch()
                             break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
@@ -415,32 +416,68 @@ class Robot:
             return abs(y_now - pos_ini[1])
 
     def turnOdometry(self, sentido_giro, destino):
-        """Turns the robot given a sentido_giro and a destino"""
 
-        print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
-
-        self.setSpeed(0, np.radians(sentido_giro / 2.0))
-
-        theta = self.read_gyro()
-
-        print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
+        # print("Destino inicial: ", destino)
+        # print("Sentido de giro inicial", sentido_giro)
 
         # Pasamos los grados a [-180, 180]
+        theta = self.read_gyro()
         theta = (theta + 180) % 360 - 180
 
-        print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
-        print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+        # print("theta inicial: ", theta)
 
         # Caso especial para que el robot dé la vuelta en el sentido correcto
         if destino == 180 and theta < 0:
             destino = -180
+            sentido_giro = -sentido_giro if sentido_giro > 0 else sentido_giro
+        sentido_giro = -sentido_giro if theta < -45 and theta > - \
+            135 and destino == 90 and sentido_giro > 0 else sentido_giro
+        sentido_giro = -sentido_giro if theta > 45 and theta < 135 and destino == - \
+            90 and sentido_giro < 0 else sentido_giro
+        sentido_giro = -sentido_giro if theta > 135 and destino == 0 and sentido_giro > 0 else sentido_giro
+        sentido_giro = -sentido_giro if theta < - \
+            135 and destino == 0 and sentido_giro < 0 else sentido_giro
+
+        self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        while abs(theta - destino) >= 1.0:
-            theta = self.read_gyro()
-            theta = (theta + 180) % 360 - 180
+        if destino == 180 or destino == -180:
+            theta_anterior = theta
+            nueva_theta = self.read_gyro()
+            nueva_theta = (theta + 180) % 360 - 180
+            # print("Sentido de giro: ", sentido_giro)
+            # print("theta: ", theta)
+            # print("destino: ", destino)
+            while abs(nueva_theta - theta_anterior) < 270:
+                theta_anterior = nueva_theta
+                nueva_theta = self.read_gyro()
+                nueva_theta = (nueva_theta + 180) % 360 - 180
+                # print("Sentido de giro: ", sentido_giro)
+                # print("theta_anterior: ", theta_anterior)
+                # print("nueva_theta: ", nueva_theta)
+                # print("destino: ", destino)
+        else:
+            # print("Sentido de giro: ", sentido_giro)
+            # print("theta: ", theta)
+            # print("destino: ", destino)
+            time.sleep(0.5)
+            if sentido_giro < 0:
+                while theta > destino:
+                    # print("Sentido de giro A")
+                    # print("Sentido de giro: ", sentido_giro)
+                    # print("theta: ", theta)
+                    # print("destino: ", destino)
+                    theta = self.read_gyro()
+                    theta = (theta + 180) % 360 - 180
+            else:
+                while theta < destino:
+                    # print("Sentido de giro B")
+                    # print("Sentido de giro: ", sentido_giro)
+                    # print("theta: ", theta)
+                    # print("destino: ", destino)
+                    theta = self.read_gyro()
+                    theta = (theta + 180) % 360 - 180
 
-        print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
