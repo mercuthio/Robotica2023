@@ -24,9 +24,10 @@ def main(args):
         # Launch updateOdometry thread()
         robot.startOdometry()
 
-        # Init gyro and light sensor
+        # Init gyro, light sensor and sonar
         robot.waitGyro()
         robot.waitLight()
+        robot.waitSonar()
 
         cam = VideoCapture(0)
         cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -97,7 +98,7 @@ def main(args):
             time.sleep(0.5)
             robot.setSpeed(0, 0)
             salida = check_output(cam, img_r2, img_bb8, robot.salida)
-            print("La salida es por la", salida)
+            print("=== La salida es por la", salida, "===")
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 4: GET BALL                  ")
@@ -112,13 +113,6 @@ def main(args):
         print("                     PHASE 5: LEAVE                    ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # Guardamos la odometría actual del robot (el eje y es el que nos interesa). Con
-        # esto, sabemos el error
-        _, y_actual, _ = robot.readOdometry()
-        error_y = y_actual - Y_INICAL_CORRECTA
-
-        # El robot pilla la pelota... #
-
         # Nos ponemos mirando a la orientación que toca (dependiendo de donde se
         # encuentre el R2D2 y el BB8)
 
@@ -127,51 +121,24 @@ def main(args):
         else:
             robot.turnOdometry(-90, 0)
 
-        print("Me he enfilado a la pared")
-
         # Nos acercamos a la pared hasta la distancia que toca.
-        while robot.read_ultrasonic() > 15:
-            robot.setSpeed(15, 0)
+        while robot.read_ultrasonic() > DISTANCIA_OPTIMA_PARED:
+            robot.setSpeed(20, 0)
         robot.setSpeed(0, 0)
-
-        # Corregimos
-        # distancia = robot.read_ultrasonic()
-        # distancia_optima = 20
-        # if abs(robot.read_ultrasonic() - DISTANCIA_OPTIMA_PARED) > 0.5:
-        #     time.sleep(1)
-        #     robot.setSpeed(distancia - distancia_optima, 0)
-        #     time.sleep(1)
-        #     robot.setSpeed(0, 0)
-
-        print("Ya estoy cerca")
 
         # Volvemos a girar para ver hacia el norte
         robot.turnOdometry(90, 90)
 
         # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
         # avanzar (la distancia es la posición actual + el error)
-        x_actual, y_actual, _ = robot.readOdometry()
+        _, y_actual, _ = robot.readOdometry()
 
         while y_actual < -5:
-            # print("Y actual: ", y_actual)
             robot.setSpeed(20, 0)
             _, y_actual, _ = robot.readOdometry()
 
-        # distancia_a_recorrer = abs(y_actual + error_y)
-        # tiempo_recorrido = distancia_a_recorrer / 20  # segundos
-
-        # print("y_actual: ", y_actual)
-        # print("distancia_a_recorrer: ", distancia_a_recorrer)
-        # print("tiempo_recorrido: ", tiempo_recorrido)
-
-        # Avanzamos lo necesario.
-        # robot.setSpeed(20, 0)
-        # time.sleep(tiempo_recorrido)
-        # robot.setSpeed(0, 0)
-
         # # This currently unconfigure the sensors, disable the motors,
         # # and restore the LED to the control of the BrickPi3 firmware.
-
         robot.setSpeed(0, 0)
         robot.BP.reset_all()
         robot.stopOdometry()

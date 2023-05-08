@@ -389,7 +389,6 @@ class Robot:
 
         min_vel = 10.0
         max_vel = 15.0
-        print(self.B - change)
         while (self.B - change) > 1.0:
             v = np.clip(self.B - change, min_vel, max_vel)
 
