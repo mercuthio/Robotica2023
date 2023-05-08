@@ -39,7 +39,6 @@ def fix_position(robot):
     robot.setSpeed(0, 0)
 
 
-
 def fix_positiontest(robot):
     robot.turnOdometry(30, 30)
 

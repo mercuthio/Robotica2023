@@ -379,8 +379,8 @@ class Robot:
             self.orientation_robot = "South"
         else:  # grados < 315
             self.orientation_robot = "East"
-        
-        print ("Orientacion actual del robot: ", self.orientation_robot)
+
+        print("Orientacion actual del robot: ", self.orientation_robot)
 
     def _moveCell(self, pos_ini):
         """Moves to a new cell"""
@@ -420,12 +420,43 @@ class Robot:
     def turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
-        print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
+        # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
 
+        # self.setSpeed(0, np.radians(sentido_giro / 2.0))
+
+        # theta = self.read_gyro()
+
+        # print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
+
+        # # Pasamos los grados a [-180, 180]
+        # theta = (theta + 180) % 360 - 180
+
+        # print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+        # print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+
+        # # Caso especial para que el robot dé la vuelta en el sentido correcto
+        # if destino == 180 and theta < 0:
+        #     destino = -180
+
+        # menor = True if theta < destino else False
+
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        # while abs(theta - destino) >= 1.0:
+        #     theta = self.read_gyro()
+        #     theta = (theta + 180) % 360 - 180
+
+        #     if menor == True and theta > destino:
+        #         break
+        #     elif menor == False and theta < destino:
+        #         break
+
+        # print("[Giro] Angulo final tras girar:", theta)
+        # self.setSpeed(0, 0)
+
+        print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
         self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
-        theta = self.read_gyro()
-
+        theta = (self.read_gyro() + 180) % 360 - 180
         print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
 
         # # Pasamos los grados a [-180, 180]
@@ -434,9 +465,23 @@ class Robot:
         print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
         print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
 
-        # Caso especial para que el robot dé la vuelta en el sentido correcto
-        if destino == 180 and theta < 0:
-            destino = -180
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        anterior_error = abs(theta - destino)
+        nuevo_error = anterior_error
+        if destino == 180 or destino == -180:
+            while (theta > 135 or theta < -135) or anterior_error < nuevo_error or nuevo_error == 0:
+                theta = self.read_gyro()
+                theta = (theta + 180) % 360 - 180
+                anterior_error = nuevo_error
+                nuevo_error = abs(theta - destino)
+                print(theta)
+        else:
+            while abs(theta - destino) >= 45 or anterior_error < nuevo_error or nuevo_error == 0:
+                theta = self.read_gyro()
+                theta = (theta + 180) % 360 - 180
+                anterior_error = nuevo_error
+                nuevo_error = abs(theta - destino)
+                print(theta)
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
         while abs(theta - destino) >= 4.0:
@@ -471,7 +516,7 @@ class Robot:
         #         theta = (theta + 180) % 360 - 180
         #         anterior_error = nuevo_error
         #         nuevo_error = abs(theta - destino)
-        #         
+        #
         #         print("La distancia es demasiado grande: ", abs(theta - destino) >= 5)
         #         print("Ha incrementado el error:  ")
 
@@ -569,7 +614,7 @@ class Robot:
         obtainedValue = False
         while not obtainedValue:
             try:
-                value = -self.BP.get_sensor(self.BP.PORT_1)[0]
+                value = -self.BP.get_sensor(self.BP.PORT_1)[0] - 90
                 obtainedValue = True
             except brickpi3.SensorError as error:
                 print("[!] Error de giroscopio.", error)
