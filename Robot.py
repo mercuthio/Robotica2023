@@ -209,7 +209,7 @@ class Robot:
         self.log_file.close()
         # self.BP.reset_all()
 
-    def trackObject(self, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
+    def trackObject(self, cam, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
         """Tracks the object until the robot can catch it"""
 
         finished = False
@@ -230,7 +230,7 @@ class Robot:
             while not targetFound:
 
                 # Da vueltras buscando la pelota
-                blob = get_blob(False)
+                blob = get_blob(cam, False)
 
                 # Si ha encontrado la pelota, sale del bucle
                 if (blob != -1):
@@ -311,16 +311,16 @@ class Robot:
 
                         # Se comprueba si se ha obtenido la pelota
 
-                        blob_red = get_red(False)
-                        blob_red = get_red(False)
+                        blob_red = get_red(cam, False)
+                        blob_red = get_red(cam, False)
 
                         if blob_red:
-                            self.setSpeed(0, np.radians(-90))
-                            time.sleep(1)
+                            # self.setSpeed(0, np.radians(-90))
+                            # time.sleep(1)
                             self.setSpeed(0, 0)
 
-                            blob_red = get_red(False)
-                            blob_red = get_red(False)
+                            blob_red = get_red(cam, False)
+                            blob_red = get_red(cam, False)
 
                             # Si ve bastante rojo, la ha cogido
                             if blob_red:
@@ -334,18 +334,19 @@ class Robot:
                                 targetPositionReached = True
                                 targetFound = False
                                 # Marcha atrás para mejorar visión
-                                blob = get_blob(False)
+                                self.uncatch()
+                                blob = get_blob(cam, False)
 
-                            self.setSpeed(0, np.radians(90))
-                            time.sleep(1)
+                            # self.setSpeed(0, np.radians(90))
+                            # time.sleep(1)
                             self.setSpeed(0, 0)
-                            time.sleep(3)
-                            self.uncatch()
+                            # time.sleep(3)
+                            # self.uncatch()
                             break
 
                 # Revisa si sigue teniendo la pelota delante, si no la tiene
                 # volvemos a buscarla
-                blob = get_blob(False)
+                blob = get_blob(cam, False)
                 if (blob == -1):
                     targetFound = False
                     break
@@ -378,6 +379,8 @@ class Robot:
             self.orientation_robot = "South"
         else:  # grados < 315
             self.orientation_robot = "East"
+        
+        print ("Orientacion actual del robot: ", self.orientation_robot)
 
     def _moveCell(self, pos_ini):
         """Moves to a new cell"""
@@ -425,7 +428,7 @@ class Robot:
 
         print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
 
-        # Pasamos los grados a [-180, 180]
+        # # Pasamos los grados a [-180, 180]
         theta = (theta + 180) % 360 - 180
 
         print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
@@ -436,11 +439,43 @@ class Robot:
             destino = -180
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        while abs(theta - destino) >= 1.0:
+        while abs(theta - destino) >= 4.0:
             theta = self.read_gyro()
             theta = (theta + 180) % 360 - 180
 
         print("[Giro] Angulo final tras girar:", theta)
+        self.setSpeed(0, 0)
+
+        # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
+        # self.setSpeed(0, np.radians(sentido_giro / 2.0))
+
+        # theta = (self.read_gyro() + 180) % 360 - 180
+        # print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
+
+        # print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+        # print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        # anterior_error = abs(theta - destino)
+        # nuevo_error = anterior_error
+        # if destino == 180 or destino == -180:
+        #     while ((theta < 185 or theta > -185) or anterior_error > nuevo_error) and nuevo_error != 0:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        #         anterior_error = nuevo_error
+        #         nuevo_error = abs(theta - destino)
+        #         print(theta)
+        # else:
+        #     while (abs(theta - destino) >= 5 or anterior_error > nuevo_error ) and nuevo_error != 0:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        #         anterior_error = nuevo_error
+        #         nuevo_error = abs(theta - destino)
+        #         
+        #         print("La distancia es demasiado grande: ", abs(theta - destino) >= 5)
+        #         print("Ha incrementado el error:  ")
+
+        # print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
