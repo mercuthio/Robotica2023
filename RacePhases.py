@@ -32,7 +32,7 @@ def slalom(robot, id):
 
 def fix_position(robot):
     distancia = robot.read_ultrasonic()
-    distancia_optima = 52
+    distancia_optima = 55
 
     robot.setSpeed(distancia - distancia_optima, 0)
     time.sleep(1)

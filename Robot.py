@@ -416,73 +416,69 @@ class Robot:
             return abs(y_now - pos_ini[1])
 
     def turnOdometry(self, sentido_giro, destino):
+        """Turns the robot given a sentido_giro and a destino"""
 
-        # print("Destino inicial: ", destino)
-        # print("Sentido de giro inicial", sentido_giro)
+        # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
 
-        # Pasamos los grados a [-180, 180]
-        theta = self.read_gyro()
-        theta = (theta + 180) % 360 - 180
+        # self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
-        orientacion_sur = True if (theta < -135 or theta > 135) else False
+        # theta = self.read_gyro()
 
-        # print("theta inicial: ", theta)
+        # print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
 
-        # Caso especial para que el robot dé la vuelta en el sentido correcto
-        if destino == 180 and theta < 0:
-            destino = -180
-            sentido_giro = -sentido_giro if sentido_giro > 0 else sentido_giro
-        sentido_giro = -sentido_giro if theta < -45 and theta > - \
-            135 and destino == 90 and sentido_giro > 0 else sentido_giro
-        sentido_giro = -sentido_giro if theta > 45 and theta < 135 and destino == - \
-            90 and sentido_giro < 0 else sentido_giro
-        sentido_giro = -sentido_giro if theta > 135 and destino == 0 and sentido_giro > 0 else sentido_giro
-        sentido_giro = -sentido_giro if theta < - \
-            135 and destino == 0 and sentido_giro < 0 else sentido_giro
+        # # Pasamos los grados a [-180, 180]
+        # theta = (theta + 180) % 360 - 180
 
+        # print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+        # print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+
+        # # Caso especial para que el robot dé la vuelta en el sentido correcto
+        # if destino == 180 and theta < 0:
+        #     destino = -180
+
+        # menor = True if theta < destino else False
+
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        # while abs(theta - destino) >= 1.0:
+        #     theta = self.read_gyro()
+        #     theta = (theta + 180) % 360 - 180
+
+        #     if menor == True and theta > destino:
+        #         break
+        #     elif menor == False and theta < destino:
+        #         break
+
+        # print("[Giro] Angulo final tras girar:", theta)
+        # self.setSpeed(0, 0)
+
+        print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
         self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
-        # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        if destino == 180 or destino == -180:
-            theta_anterior = theta
-            nueva_theta = self.read_gyro()
-            nueva_theta = (theta + 180) % 360 - 180
-            # print("Sentido de giro: ", sentido_giro)
-            # print("theta: ", theta)
-            # print("destino: ", destino)
-            while abs(nueva_theta - theta_anterior) < 270:
-                theta_anterior = nueva_theta
-                nueva_theta = self.read_gyro()
-                nueva_theta = (nueva_theta + 180) % 360 - 180
-                # print("Sentido de giro: ", sentido_giro)
-                # print("theta_anterior: ", theta_anterior)
-                # print("nueva_theta: ", nueva_theta)
-                # print("destino: ", destino)
-        else:
-            # print("Sentido de giro: ", sentido_giro)
-            # print("theta: ", theta)
-            # print("destino: ", destino)
-            # if orientacion_sur:
-            time.sleep(0.5)
-            theta = self.read_gyro()
-            theta = (theta + 180) % 360 - 180
-            if sentido_giro < 0:
-                while theta > destino:
-                    # print("Sentido de giro A")
-                    # print("Sentido de giro: ", sentido_giro)
-                    # print("theta: ", theta)
-                    # print("destino: ", destino)
-                    theta = self.read_gyro()
-                    theta = (theta + 180) % 360 - 180
-            else:
-                while theta < destino:
-                    # print("Sentido de giro B")
-                    # print("Sentido de giro: ", sentido_giro)
-                    # print("theta: ", theta)
-                    # print("destino: ", destino)
-                    theta = self.read_gyro()
-                    theta = (theta + 180) % 360 - 180
+        theta = (self.read_gyro() + 180) % 360 - 180
+        print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
 
+        print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+        print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        anterior_error = abs(theta - destino)
+        nuevo_error = anterior_error
+        if destino == 180 or destino == -180:
+            while (theta > 135 or theta < -135) or anterior_error < nuevo_error or nuevo_error == 0:
+                theta = self.read_gyro()
+                theta = (theta + 180) % 360 - 180
+                anterior_error = nuevo_error
+                nuevo_error = abs(theta - destino)
+                print(theta)
+        else:
+            while abs(theta - destino) >= 45 or anterior_error < nuevo_error or nuevo_error == 0:
+                theta = self.read_gyro()
+                theta = (theta + 180) % 360 - 180
+                anterior_error = nuevo_error
+                nuevo_error = abs(theta - destino)
+                print(theta)
+
+        # print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):
@@ -576,7 +572,7 @@ class Robot:
         obtainedValue = False
         while not obtainedValue:
             try:
-                value = -self.BP.get_sensor(self.BP.PORT_1)[0]
+                value = -self.BP.get_sensor(self.BP.PORT_1)[0] - 90
                 obtainedValue = True
             except brickpi3.SensorError as error:
                 print("[!] Error de giroscopio.", error)

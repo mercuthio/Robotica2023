@@ -125,7 +125,7 @@ def main(args):
         print("Me he enfilado a la pared")
 
         # Nos acercamos a la pared hasta la distancia que toca.
-        while robot.read_ultrasonic() > 20:
+        while robot.read_ultrasonic() > 15:
             robot.setSpeed(15, 0)
         robot.setSpeed(0, 0)
 
@@ -145,25 +145,31 @@ def main(args):
             robot.turnOdometry(-90, 90)
         else:
             robot.turnOdometry(90, -90)
-        print("HOLA")
 
         # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
         # avanzar (la distancia es la posición actual + el error)
-        _, y_actual, _ = robot.readOdometry()
-        distancia_a_recorrer = abs(y_actual + error_y)
-        tiempo_recorrido = distancia_a_recorrer / 20  # segundos
+        x_actual, y_actual, _ = robot.readOdometry()
 
-        print("y_actual: ", y_actual)
-        print("distancia_a_recorrer: ", distancia_a_recorrer)
-        print("tiempo_recorrido: ", tiempo_recorrido)
+        while y_actual < 20:
+            print("Y actual: ", y_actual)
+            robot.setSpeed(40, 0)
+            _, y_actual, _ = robot.readOdometry()
+
+        # distancia_a_recorrer = abs(y_actual + error_y)
+        # tiempo_recorrido = distancia_a_recorrer / 20  # segundos
+
+        # print("y_actual: ", y_actual)
+        # print("distancia_a_recorrer: ", distancia_a_recorrer)
+        # print("tiempo_recorrido: ", tiempo_recorrido)
 
         # Avanzamos lo necesario.
-        robot.setSpeed(20, 0)
-        time.sleep(tiempo_recorrido)
-        robot.setSpeed(0, 0)
+        # robot.setSpeed(20, 0)
+        # time.sleep(tiempo_recorrido)
+        # robot.setSpeed(0, 0)
 
         # # This currently unconfigure the sensors, disable the motors,
         # # and restore the LED to the control of the BrickPi3 firmware.
+
         robot.setSpeed(0, 0)
         robot.BP.reset_all()
         robot.stopOdometry()
