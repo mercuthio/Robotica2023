@@ -106,9 +106,9 @@ class Robot:
             ("West"): 90
         }
 
-        self.transformacion = np.array([ [np.cos(-90), -np.sin(-90), 0],
+        self.transformacion = np.array([[np.cos(-90), -np.sin(-90), 0],
                                         [np.sin(-90),  np.cos(-90), 0],
-                                        [0, 0, 1]] )
+                                        [0, 0, 1]])
 
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
@@ -445,7 +445,6 @@ class Robot:
         print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
-
         # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
         # anterior_error = abs(theta - destino)
         # nuevo_error = anterior_error
@@ -463,7 +462,6 @@ class Robot:
         #         anterior_error = nuevo_error
         #         nuevo_error = abs(theta - destino)
         #         print(theta)
-
 
         # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
         # self.setSpeed(0, np.radians(sentido_giro / 2.0))

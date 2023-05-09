@@ -27,7 +27,6 @@ def main(args):
         # Init gyro, light sensor and sonar
         robot.waitGyro()
         robot.waitLight()
-        # robot.waitSonar()
 
         cam = VideoCapture(0)
         cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -47,6 +46,9 @@ def main(args):
             robot.salida = "B"
 
         print("[c] Color de la cartulina:", color)
+
+        # Esperar input del usuario para comenzar el circuito
+        # input("[+] Color obtenido, pulse una tecla para continuar...")
 
         # Avanzamos a la salida inicial
         robot.setSpeed(20, 0)

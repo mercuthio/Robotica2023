@@ -13,15 +13,24 @@ def slalom(robot, id):
 
         robot.setSpeed(40*np.pi/6, np.radians(180 / 6))
         time.sleep(6)
+
         robot.setSpeed(40*np.pi/6, np.radians(-180 / 6))
         time.sleep(6)
+
+        robot.setSpeed(0, 0)
+
+        # Ajuste de theta
         robot.turnOdometry(20, -180)
+
+        # Ajustamos con pared 1
         fix_position(robot)
         robot.turnOdometry(90, -90)
+
+        # Ajustamos con pared 2
         fix_position2(robot)
         robot.turnOdometry(90, 0)
 
-        # Con 45 grados        
+        # Con 45 grados
         # robot.turnOdometry(-90, -135)
         # robot.setSpeed(np.pi * np.sqrt((35*35 + 21*21) / 2)/8, np.radians(90 / 8))
         # time.sleep(8)
@@ -36,18 +45,26 @@ def slalom(robot, id):
 
         robot.setSpeed(40*np.pi/6, np.radians(-180 / 6))
         time.sleep(6)
+
         robot.setSpeed(40*np.pi/8, np.radians(180 / 6))
         time.sleep(6)
 
         robot.setSpeed(0, 0)
 
+        # Ajuste de theta
         if robot.read_gyro() < -180:
             robot.turnOdometry(20, -180)
         elif robot.read_gyro() > 180:
             robot.turnOdometry(-20, -180)
 
+        # Ajustamos con pared 1
         fix_position(robot)
+        robot.turnOdometry(-90, -90)
+
+        # Ajustamos con pared 1
+        fix_position2(robot)
         robot.turnOdometry(-90, -180)
+
 
 def fix_position(robot):
     distancia = robot.read_ultrasonic()
@@ -57,13 +74,13 @@ def fix_position(robot):
     time.sleep(1)
     robot.setSpeed(0, 0)
 
+
 def fix_position2(robot):
     distancia_optima = 15
-    distancia = robot.read_ultrasonic()
+    distancia = robot.read_ultrasonic() % 40
 
-    while distancia % 40 > distancia_optima:
-        robot.setSpeed(20, 0) 
-
+    robot.setSpeed(distancia - distancia_optima, 0)
+    time.sleep(1)
     robot.setSpeed(0, 0)
 
 
