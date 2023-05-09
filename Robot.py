@@ -72,7 +72,7 @@ class Robot:
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
 
-        self.P = 0.01
+        self.P = 0.05
         self.log_file_name = datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt")
         self.log_file = open("logs/" + self.log_file_name, "w")
 
@@ -105,6 +105,10 @@ class Robot:
             ("East"): -90,
             ("West"): 90
         }
+
+        self.transformacion = np.array([ [np.cos(-90), -np.sin(-90), 0],
+                                        [np.sin(-90),  np.cos(-90), 0],
+                                        [0, 0, 1]] )
 
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
@@ -181,8 +185,6 @@ class Robot:
             self.x.value += Ax
             self.y.value += Ay
             self.th.value += Ath
-
-            # Guardamos cómo se ha modificado la odometría en un log y lo imprimimos por pantalla
 
             # Desbloqueamos mutex de la odometría.
             self.lock_odometry.release()
@@ -384,7 +386,6 @@ class Robot:
 
     def _moveCell(self, pos_ini):
         """Moves to a new cell"""
-
         change = self._getPosChange(pos_ini)
 
         min_vel = 10.0
@@ -410,77 +411,31 @@ class Robot:
     def _getPosChange(self, pos_ini):
         """Returns the global position change"""
         x_now, y_now, _ = self.readOdometry()
-
         if self.orientation_robot == "North" or self.orientation_robot == "South":
-            return abs(x_now - pos_ini[0])
-        else:
             return abs(y_now - pos_ini[1])
+        else:
+            return abs(x_now - pos_ini[0])
 
     def turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
-        # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
-
-        # self.setSpeed(0, np.radians(sentido_giro / 2.0))
-
-        # theta = self.read_gyro()
-
-        # print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
-
-        # # Pasamos los grados a [-180, 180]
-        # theta = (theta + 180) % 360 - 180
-
-        # print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
-        # print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
-
-        # # Caso especial para que el robot dé la vuelta en el sentido correcto
-        # if destino == 180 and theta < 0:
-        #     destino = -180
-
-        # menor = True if theta < destino else False
-
-        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        # while abs(theta - destino) >= 1.0:
-        #     theta = self.read_gyro()
-        #     theta = (theta + 180) % 360 - 180
-
-        #     if menor == True and theta > destino:
-        #         break
-        #     elif menor == False and theta < destino:
-        #         break
-
-        # print("[Giro] Angulo final tras girar:", theta)
-        # self.setSpeed(0, 0)
-
         print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
-        self.setSpeed(0, np.radians(sentido_giro / 2.0))
 
-        theta = (self.read_gyro() + 180) % 360 - 180
+        self.setSpeed(0, np.radians(sentido_giro))
+
+        theta = self.read_gyro()
+
         print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
 
-        # # Pasamos los grados a [-180, 180]
+        # Pasamos los grados a [-180, 180]
         theta = (theta + 180) % 360 - 180
 
         print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
         print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
 
-        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        anterior_error = abs(theta - destino)
-        nuevo_error = anterior_error
-        if destino == 180 or destino == -180:
-            while (theta > 135 or theta < -135) or anterior_error < nuevo_error or nuevo_error == 0:
-                theta = self.read_gyro()
-                theta = (theta + 180) % 360 - 180
-                anterior_error = nuevo_error
-                nuevo_error = abs(theta - destino)
-                print(theta)
-        else:
-            while abs(theta - destino) >= 45 or anterior_error < nuevo_error or nuevo_error == 0:
-                theta = self.read_gyro()
-                theta = (theta + 180) % 360 - 180
-                anterior_error = nuevo_error
-                nuevo_error = abs(theta - destino)
-                print(theta)
+        # Caso especial para que el robot dé la vuelta en el sentido correcto
+        if destino == 180 and theta < 0:
+            destino = -180
 
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
         while abs(theta - destino) >= 4.0:
@@ -489,6 +444,26 @@ class Robot:
 
         print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
+
+
+        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
+        # anterior_error = abs(theta - destino)
+        # nuevo_error = anterior_error
+        # if destino == 180 or destino == -180:
+        #     while (theta > 135 or theta < -135) or anterior_error < nuevo_error or nuevo_error == 0:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        #         anterior_error = nuevo_error
+        #         nuevo_error = abs(theta - destino)
+        #         print(theta)
+        # else:
+        #     while abs(theta - destino) >= 45 or anterior_error < nuevo_error or nuevo_error == 0:
+        #         theta = self.read_gyro()
+        #         theta = (theta + 180) % 360 - 180
+        #         anterior_error = nuevo_error
+        #         nuevo_error = abs(theta - destino)
+        #         print(theta)
+
 
         # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
         # self.setSpeed(0, np.radians(sentido_giro / 2.0))

@@ -27,7 +27,7 @@ def main(args):
         # Init gyro, light sensor and sonar
         robot.waitGyro()
         robot.waitLight()
-        robot.waitSonar()
+        # robot.waitSonar()
 
         cam = VideoCapture(0)
         cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
@@ -48,6 +48,11 @@ def main(args):
 
         print("[c] Color de la cartulina:", color)
 
+        # Avanzamos a la salida inicial
+        robot.setSpeed(20, 0)
+        time.sleep(1)
+        robot.setSpeed(0, 0)
+
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 1: SLALOM                    ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
@@ -67,11 +72,11 @@ def main(args):
         if robot.salida == "A":
             mapa = "mapaA_CARRERA.txt"
             start_pos = [1, 2]
-            finish_pos = [3, 3]
+            finish_pos = [3, 4]
         else:  # Case Map B
             mapa = "mapaB_CARRERA.txt"
             start_pos = [5, 2]
-            finish_pos = [3, 3]
+            finish_pos = [3, 4]
 
         map_file = "maps/" + mapa
         myMap = Map2D(map_file)

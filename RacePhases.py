@@ -11,48 +11,43 @@ def slalom(robot, id):
     if id == "A":
         robot.turnOdometry(-90, -180)
 
-        robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
-        time.sleep(8)
-        robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
-        time.sleep(8)
+        robot.setSpeed(40*np.pi/6, np.radians(180 / 6))
+        time.sleep(6)
+        robot.setSpeed(40*np.pi/6, np.radians(-180 / 6))
+        time.sleep(6)
         robot.turnOdometry(20, -180)
         fix_position(robot)
+        robot.turnOdometry(90, -90)
+        fix_position2(robot)
         robot.turnOdometry(90, 0)
+
+        # Con 45 grados        
+        # robot.turnOdometry(-90, -135)
+        # robot.setSpeed(np.pi * np.sqrt((35*35 + 21*21) / 2)/8, np.radians(90 / 8))
+        # time.sleep(8)
+        # robot.setSpeed(np.pi * np.sqrt((35*35 + 25*25) / 2)/8, np.radians(-90 / 8))
+        # time.sleep(8)
+        # robot.turnOdometry(20, -180)
+        # fix_position(robot)
+        # robot.turnOdometry(90, 0)
     else:
 
-        robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
-        time.sleep(8)
-        robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
-        time.sleep(8)
-
-        robot.turnOdometry(20, 0)
-        fix_position(robot)
-        robot.turnOdometry(-90, -180)
-
-
-def slalomQuick(robot, id):
-    """Performs a slalom depending on the id"""
-    if id == "A":
-        robot.turnOdometry(-90, -135)
-
-        robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
-        time.sleep(8)
-        robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
-        time.sleep(8)
-        robot.turnOdometry(20, -180)
-        fix_position(robot)
         robot.turnOdometry(90, 0)
-    else:
 
-        robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
-        time.sleep(8)
-        robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
-        time.sleep(8)
+        robot.setSpeed(40*np.pi/6, np.radians(-180 / 6))
+        time.sleep(6)
+        robot.setSpeed(40*np.pi/8, np.radians(180 / 6))
+        time.sleep(6)
 
-        robot.turnOdometry(20, 0)
+        robot.setSpeed(0, 0)
+
+        if robot.read_gyro() < -180:
+            robot.turnOdometry(20, -180)
+        elif robot.read_gyro() > 180:
+            robot.turnOdometry(-20, -180)
+
         fix_position(robot)
         robot.turnOdometry(-90, -180)
-
 
 def fix_position(robot):
     distancia = robot.read_ultrasonic()
@@ -60,6 +55,15 @@ def fix_position(robot):
 
     robot.setSpeed(distancia - distancia_optima, 0)
     time.sleep(1)
+    robot.setSpeed(0, 0)
+
+def fix_position2(robot):
+    distancia_optima = 15
+    distancia = robot.read_ultrasonic()
+
+    while distancia % 40 > distancia_optima:
+        robot.setSpeed(20, 0) 
+
     robot.setSpeed(0, 0)
 
 
