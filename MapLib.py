@@ -368,7 +368,6 @@ class Map2D:
 
         if robotPosVectors:
             for loc in robotPosVectors:
-                print("Robot in pos: ", loc)
                 self._drawRobot(loc_x_y_th=loc, robotPlotStyle='b--')
             # plot last robot position with solid green line
             self._drawRobot(loc_x_y_th=loc, robotPlotStyle='g-')

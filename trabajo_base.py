@@ -21,6 +21,10 @@ def main(args):
         # Initialize Odometry. Default value will be 0,0,0
         robot = Robot()
 
+        # Do not create log file if told
+        if args.log == False:
+            robot.log_file_enabled = False
+
         # Init gyro, light sensor and sonar
         robot.waitGyro()
         robot.waitLight()
@@ -168,6 +172,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-p", "--plot", help="plot odometry", action='store_true')
+    parser.add_argument(
+        "-l", "--log", help="save odometry log file", type=bool, default=True)
     args = parser.parse_args()
 
     main(args)

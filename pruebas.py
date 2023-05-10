@@ -15,30 +15,50 @@ def main(args):
     myMap = Map2D(map_file)
     odometry = "logs/" + "log-14h-28m-09s.txt"
 
-    xRM = [600, 2600, np.radians(-90)]
-    tRM = hom_array(xRM)
+    # Posicion de la salida respecto al mundo
+    WxS = [600, 2800, np.radians(0)]
+    WtS = hom_array(WxS)
 
-    robotPosVectors = []
+    # Posicion del robot respecto a la salida
+    # SxR = [-40.96 * 10, -33.35 * 10, np.radians(-98.71)]
+    # StR = hom_array(SxR)
+
+    # WtR = np.dot(WtS, StR)
+    # WxR = loc_array(WtR)
+
+    # robotPosVectors = []
+
+    # robotPosVectors.append(WxR)
 
     with open(odometry, "r") as archivo:
         lineas = archivo.readlines()
 
-    for linea in lineas:
-        # Separar los campos de cada línea
-        campos = linea.split("\t")
-        x = float(campos[1].split(":")[1])
-        y = float(campos[2].split(":")[1])
-        th = float(campos[3].split(":")[1])
-        punto = np.dot(tRM, [x, y, th])
+    robotPosVectors = []
+    for line in lineas:
+        x_pos = line.find("X:")
+        y_pos = line.find("Y:")
+        th_pos = line.find("TH:")
+        v_pos = line.find("V:")
 
-        robotPosVectors.append(punto)
+        x_val = float(line[x_pos+2:y_pos].strip())
+        y_val = float(line[y_pos+2:th_pos].strip())
+        th_val = float(line[th_pos+3:v_pos].strip())
+
+        # Posicion del robot respecto a la salida
+        SxR = [x_val * 10, y_val * 10, np.radians(th_val)]
+        StR = hom_array(SxR)
+
+        WtR = np.dot(WtS, StR)
+        WxR = loc_array(WtR)
+
+        robotPosVectors.append(WxR)
 
     myMap.drawMapWithRobotLocations(robotPosVectors, saveSnapshot=False)
 
     # myMap.drawMap(saveSnapshot=False)
 
-    if args.plot:
-        generatePlot("cadena.txt")
+    # if args.plot:
+    #     generatePlot("cadena.txt")
 
 
 if __name__ == "__main__":

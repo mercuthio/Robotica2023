@@ -67,6 +67,7 @@ class Robot:
         self.w = Value('d', 0.0)
         # boolean to show if odometry updates are finished
         self.finished = Value('b', 1)
+
         self.orientation_robot = "North"
 
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
@@ -75,6 +76,7 @@ class Robot:
         self.P = 0.05
         self.log_file_name = datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt")
         self.log_file = open("logs/" + self.log_file_name, "w")
+        self.log_file_enabled = True
 
         self.salida = "A"
         self.color = ["Black", "Blue", "Green", "Yellow", "Red", "White"]
@@ -190,9 +192,11 @@ class Robot:
             # save LOG
             # print("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime("%Hh-%Mm-%Ss.txt"),
             #  round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
-            self.log_file.write("[{}] X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
-                "%Hh-%Mm-%Ss"), round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
-            self.log_file.flush()
+
+            if self.log_file_enabled:
+                self.log_file.write("[{}] X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
+                    "%Hh-%Mm-%Ss"), round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
+                self.log_file.flush()
 
             tEnd = time.clock()
             time.sleep(self.P - (tEnd-tIni))
@@ -206,7 +210,9 @@ class Robot:
     def stopOdometry(self):
         """Kills the process that updates odometry"""
         self.finished.value = True
-        self.log_file.close()
+        if self.log_file_enabled:
+            self.log_file.flush()
+            self.log_file.close()
         # self.BP.reset_all()
 
     def trackObject(self, cam, targetSize, target, colorRangeMin=[0, 0, 0], colorRangeMax=[255, 255, 255]):
