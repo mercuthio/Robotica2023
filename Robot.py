@@ -244,7 +244,6 @@ class Robot:
                     self.setSpeed(0, np.radians(60))
                 else:
                     self.setSpeed(0, np.radians(-60))
-                    
 
             # 2 - Decido un v y un w para acercarme a la pelota
             while not targetPositionReached:

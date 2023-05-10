@@ -31,8 +31,8 @@ def main(args):
         # Launch updateOdometry thread()
         robot.startOdometry()
 
-        print("====== BATERIA:", 100 *
-              robot.BP.get_voltage_battery() / 12, "% ======")
+        print("====== BATERIA:", round(100 *
+              robot.BP.get_voltage_battery() / 12, 2), "% ======")
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 0: READ COLOR                ")
@@ -90,9 +90,9 @@ def main(args):
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         if robot.salida == "A":
-            robot.turnOdometry(90, 90)
+            robot.turnOdometry(90, 70)
         else:
-            robot.turnOdometry(-90, 90)
+            robot.turnOdometry(-90, 115)
 
         img_r2 = cv2.imread("imagenes/R2-D2_s.png")
         img_bb8 = cv2.imread("imagenes/BB8_s.png")
@@ -133,12 +133,11 @@ def main(args):
             robot.setSpeed(20, 0)
         robot.setSpeed(0, 0)
 
-        # Volvemos a girar para ver hacia el norte
+        # Volvemos a girar para ver hacia el oeste
         if salida == "izquierda":
             robot.turnOdometry(-90, 90)
         else:
             robot.turnOdometry(90, 90)
-        
 
         # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
         # avanzar (la distancia es la posición actual + el error)

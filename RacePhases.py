@@ -11,11 +11,15 @@ def slalom(robot, id):
     if id == "A":
         robot.turnOdometry(-90, -180)
 
-        robot.setSpeed(40*np.pi/8, np.radians(180 / 8))
-        time.sleep(8)
+        robot.setSpeed(40*np.pi/4, np.radians(180 / 4))
+        time.sleep(4)
 
-        robot.setSpeed(40*np.pi/8, np.radians(-180 / 8))
-        time.sleep(8)
+        robot.setSpeed(0, 0)
+
+        fix_position2(robot)
+
+        robot.setSpeed(40*np.pi/4, np.radians(-180 / 4))
+        time.sleep(4)
 
         robot.setSpeed(0, 0)
 
