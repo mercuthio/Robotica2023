@@ -62,7 +62,7 @@ class Robot:
         # odometry shared memory values
         self.x = Value('d', 0.0)
         self.y = Value('d', 0.0)
-        self.th = Value('d', 0.0)
+        self.th = Value('d', -np.pi/2)
         self.v = Value('d', 0.0)
         self.w = Value('d', 0.0)
         # boolean to show if odometry updates are finished
@@ -105,10 +105,6 @@ class Robot:
             ("East"): -90,
             ("West"): 90
         }
-
-        self.transformacion = np.array([[np.cos(-90), -np.sin(-90), 0],
-                                        [np.sin(-90),  np.cos(-90), 0],
-                                        [0, 0, 1]])
 
     def setSpeed(self, v, w):
         """Speed v and w is applied to both engines"""
@@ -172,11 +168,13 @@ class Robot:
 
             # print("Girscopio",BP.get_sensor(BP.PORT_1))
 
+            thetaGyro = np.radians(self.read_gyro())
+
             As = self.v.value * self.P
             Ath = self.w.value * self.P
 
-            Ax = As * np.cos(self.th.value + Ath / 2)
-            Ay = As * np.sin(self.th.value + Ath / 2)
+            Ax = As * np.cos(thetaGyro)
+            Ay = As * np.sin(thetaGyro)
 
             # Bloqueamos mutex de la odometría.
             self.lock_odometry.acquire()
@@ -184,14 +182,14 @@ class Robot:
             # Actualizamos los valores que tenemos de la odometría según su incremento.
             self.x.value += Ax
             self.y.value += Ay
-            self.th.value += Ath
+            self.th.value = thetaGyro
 
             # Desbloqueamos mutex de la odometría.
             self.lock_odometry.release()
 
             # save LOG
             # print("[{}] Actualizada posición = X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime("%Hh-%Mm-%Ss.txt"),
-            #   round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
+            #  round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
             self.log_file.write("[{}] X:{}\tY:{}\tTH:{}\tV:{}\tW:{}\n".format(datetime.datetime.now().strftime(
                 "%Hh-%Mm-%Ss"), round(self.x.value, 2), round(self.y.value, 2), round(np.degrees(self.th.value), 2), round(self.v.value, 2), round(self.w.value, 2)))
             self.log_file.flush()
@@ -231,7 +229,7 @@ class Robot:
             # 1 - Busca la pelota girando sobre sí mismo
             while not targetFound:
 
-                # Da vueltras buscando la pelota
+                # Da vueltas buscando la pelota
                 blob = get_blob(cam, False)
 
                 # Si ha encontrado la pelota, sale del bucle
@@ -246,6 +244,7 @@ class Robot:
                     self.setSpeed(0, np.radians(60))
                 else:
                     self.setSpeed(0, np.radians(-60))
+                    
 
             # 2 - Decido un v y un w para acercarme a la pelota
             while not targetPositionReached:
@@ -388,8 +387,8 @@ class Robot:
         """Moves to a new cell"""
         change = self._getPosChange(pos_ini)
 
-        min_vel = 10.0
-        max_vel = 15.0
+        min_vel = 12.0
+        max_vel = 18.0
         while (self.B - change) > 1.0:
             v = np.clip(self.B - change, min_vel, max_vel)
 
@@ -412,16 +411,16 @@ class Robot:
         """Returns the global position change"""
         x_now, y_now, _ = self.readOdometry()
         if self.orientation_robot == "North" or self.orientation_robot == "South":
-            return abs(y_now - pos_ini[1])
-        else:
             return abs(x_now - pos_ini[0])
+        else:
+            return abs(y_now - pos_ini[1])
 
     def turnOdometry(self, sentido_giro, destino):
         """Turns the robot given a sentido_giro and a destino"""
 
         print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
 
-        self.setSpeed(0, np.radians(sentido_giro))
+        self.setSpeed(0, np.radians(sentido_giro) / 2.0)
 
         theta = self.read_gyro()
 

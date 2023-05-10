@@ -2,8 +2,9 @@
 # -*- coding: UTF-8 -*-
 import argparse
 import numpy as np
+from auxFunc import *
 from MapLib import Map2D
-from plotOdometry import generatePlot
+# from plotOdometry import generatePlot
 
 
 def main(args):
@@ -12,22 +13,29 @@ def main(args):
 
     map_file = "maps/" + args.map
     myMap = Map2D(map_file)
+    odometry = "logs/" + "log-14h-28m-09s.txt"
 
-    myMap.drawMap(saveSnapshot=False)
+    xRM = [600, 2600, np.radians(-90)]
+    tRM = hom_array(xRM)
 
-    # myMap.go(robot, 2, 0)
+    robotPosVectors = []
 
-    start_pos = [0, 0]
-    # finish_pos = [myMap.sizeX - 1, 0]
-    finish_pos = [2, 0]
+    with open(odometry, "r") as archivo:
+        lineas = archivo.readlines()
 
-    myMap.fillCostMatrix(start_pos[0], start_pos[1],
-                         finish_pos[0], finish_pos[1])
-    myMap.planPath(start_pos[0], start_pos[1],
-                   finish_pos[0], finish_pos[1])
-    print(myMap.costMatrix)
-    print(myMap.currentPath)
-    myMap.drawMap(saveSnapshot=False)
+    for linea in lineas:
+        # Separar los campos de cada línea
+        campos = linea.split("\t")
+        x = float(campos[1].split(":")[1])
+        y = float(campos[2].split(":")[1])
+        th = float(campos[3].split(":")[1])
+        punto = np.dot(tRM, [x, y, th])
+
+        robotPosVectors.append(punto)
+
+    myMap.drawMapWithRobotLocations(robotPosVectors, saveSnapshot=False)
+
+    # myMap.drawMap(saveSnapshot=False)
 
     if args.plot:
         generatePlot("cadena.txt")

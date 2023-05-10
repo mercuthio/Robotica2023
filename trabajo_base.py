@@ -21,15 +21,15 @@ def main(args):
         # Initialize Odometry. Default value will be 0,0,0
         robot = Robot()
 
-        # Launch updateOdometry thread()
-        robot.startOdometry()
-
         # Init gyro, light sensor and sonar
         robot.waitGyro()
         robot.waitLight()
 
         cam = VideoCapture(0)
         cam.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+        # Launch updateOdometry thread()
+        robot.startOdometry()
 
         print("====== BATERIA:", 100 *
               robot.BP.get_voltage_battery() / 12, "% ======")
@@ -48,7 +48,7 @@ def main(args):
         print("[c] Color de la cartulina:", color)
 
         # Esperar input del usuario para comenzar el circuito
-        # input("[+] Color obtenido, pulse una tecla para continuar...")
+        input("[+] Color obtenido, pulse una tecla para continuar...")
 
         # Avanzamos a la salida inicial
         robot.setSpeed(20, 0)
@@ -74,11 +74,11 @@ def main(args):
         if robot.salida == "A":
             mapa = "mapaA_CARRERA.txt"
             start_pos = [1, 2]
-            finish_pos = [3, 4]
+            finish_pos = [4, 4]
         else:  # Case Map B
             mapa = "mapaB_CARRERA.txt"
             start_pos = [5, 2]
-            finish_pos = [3, 4]
+            finish_pos = [2, 4]
 
         map_file = "maps/" + mapa
         myMap = Map2D(map_file)
@@ -90,9 +90,9 @@ def main(args):
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         if robot.salida == "A":
-            robot.turnOdometry(-60, 60)
+            robot.turnOdometry(90, 90)
         else:
-            robot.turnOdometry(60, 130)
+            robot.turnOdometry(-90, 90)
 
         img_r2 = cv2.imread("imagenes/R2-D2_s.png")
         img_bb8 = cv2.imread("imagenes/BB8_s.png")
@@ -102,7 +102,7 @@ def main(args):
         while salida == "No encontrado":
             # Nos acercamos un poco
             robot.setSpeed(10, 0)
-            time.sleep(0.5)
+            time.sleep(1)
             robot.setSpeed(0, 0)
             salida = check_output(cam, img_r2, img_bb8, robot.salida)
             print("=== La salida es por la", salida, "===")
@@ -134,13 +134,17 @@ def main(args):
         robot.setSpeed(0, 0)
 
         # Volvemos a girar para ver hacia el norte
-        robot.turnOdometry(90, 90)
+        if salida == "izquierda":
+            robot.turnOdometry(-90, 90)
+        else:
+            robot.turnOdometry(90, 90)
+        
 
         # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
         # avanzar (la distancia es la posición actual + el error)
         _, y_actual, _ = robot.readOdometry()
 
-        while y_actual < -5:
+        while y_actual <= 20:
             robot.setSpeed(20, 0)
             _, y_actual, _ = robot.readOdometry()
 
