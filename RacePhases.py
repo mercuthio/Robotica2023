@@ -24,7 +24,12 @@ def slalom(robot, id):
         robot.setSpeed(0, 0)
 
         # Ajuste de theta
-        robot.turnOdometry(20, -180)
+
+        th =  robot.read_gyro()
+        if th > -180 and th < -90:
+            robot.turnOdometry(-20, -180)
+        elif th > -180 and th < 0:
+            robot.turnOdometry(20, -180)
 
         # Ajustamos con pared 1
         fix_position(robot)
