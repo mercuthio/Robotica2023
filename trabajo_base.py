@@ -146,9 +146,15 @@ def main(args):
         # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
         # avanzar (la distancia es la posición actual + el error)
         _, y_actual, _ = robot.readOdometry()
+        destino = 90
 
-        while y_actual <= 20:
-            robot.setSpeed(20, 0)
+        while y_actual <= 15:
+            # robot.setSpeed(20, 0)
+            time.sleep(0.01)
+            theta = robot.read_gyro()
+            theta = (theta + 180) % 360 - 180
+            # print("[Recalculando w]:", np.radians((destino - theta) / 3.0), destino)
+            robot.setSpeed(20, np.radians((destino - theta) / 3.0))
             _, y_actual, _ = robot.readOdometry()
 
         # # This currently unconfigure the sensors, disable the motors,

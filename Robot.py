@@ -170,6 +170,8 @@ class Robot:
 
             # print("Girscopio",BP.get_sensor(BP.PORT_1))
 
+            # print(self.orientation_robot, self.orientaciones[self.orientation_robot])
+
             thetaGyro = np.radians(self.read_gyro())
 
             As = self.v.value * self.P
@@ -395,6 +397,7 @@ class Robot:
         min_vel = 12.0
         max_vel = 18.0
         while (self.B - change) > 1.0:
+            time.sleep(0.01)
             v = np.clip(self.B - change, min_vel, max_vel)
 
             theta = self.read_gyro()
@@ -434,15 +437,15 @@ class Robot:
         # Pasamos los grados a [-180, 180]
         theta = (theta + 180) % 360 - 180
 
-        print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
-        print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
-
-        # Caso especial para que el robot dé la vuelta en el sentido correcto
         if destino == 180 and theta < 0:
             destino = -180
 
+        print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
+        print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
+
         # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
         while abs(theta - destino) >= 4.0:
+            time.sleep(0.01)
             theta = self.read_gyro()
             theta = (theta + 180) % 360 - 180
 
