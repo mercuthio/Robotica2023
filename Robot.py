@@ -73,9 +73,8 @@ class Robot:
         # if we want to block several instructions to be run together, we may want to use an explicit Lock
         self.lock_odometry = Lock()
 
-        self.P = 0.05
+        self.P = 0.03
         self.log_file_name = datetime.datetime.now().strftime("log-%Hh-%Mm-%Ss.txt")
-        self.log_file = open("logs/" + self.log_file_name, "w")
         self.log_file_enabled = True
 
         self.salida = "A"
@@ -118,6 +117,7 @@ class Robot:
 
         # print("Velocidad: {}, {}".format(speedDPS_left, speedDPS_right))
 
+        
         self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
         self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
 
@@ -140,6 +140,8 @@ class Robot:
 
     def startOdometry(self):
         """ This starts a new process/thread that will be updating the odometry periodically """
+        if self.log_file_enabled:
+            self.log_file = open("logs/" + self.log_file_name, "w")
         self.finished.value = False
         self.p = Process(target=self.updateOdometry, args=())
         self.p.start()
@@ -272,7 +274,7 @@ class Robot:
                     v = -10
                     w = 0
                     print("Posición errónea, recalculando...")
-                    print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
+                    # print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
                     self.setSpeed(v, w)
                     targetFound = False
                     targetPositionReached = False
@@ -284,7 +286,7 @@ class Robot:
 
                 self.setSpeed(v, w)
 
-                print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
+                # print("DIF. AREA:", A-a, "| D:", d, "| v, w:", v, w)
 
                 # Cuando la diferencia de área y distancia es suficientemente
                 # pequeña, paramos y cogemos la pelota
@@ -408,9 +410,9 @@ class Robot:
             if destino == 180 and theta < 0:
                 destino = -180
 
-            print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
+            # print("[Recalculando w]:", np.radians((destino - theta) / 1.0), destino, theta)
 
-            self.setSpeed(v, np.radians((destino - theta) / 3.0))
+            self.setSpeed(v, np.radians((destino - theta) / 1.0))
 
             change = self._getPosChange(pos_ini)
         self.setSpeed(0, 0)
@@ -450,56 +452,6 @@ class Robot:
             theta = (theta + 180) % 360 - 180
 
         print("[Giro] Angulo final tras girar:", theta)
-        self.setSpeed(0, 0)
-
-        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        # anterior_error = abs(theta - destino)
-        # nuevo_error = anterior_error
-        # if destino == 180 or destino == -180:
-        #     while (theta > 135 or theta < -135) or anterior_error < nuevo_error or nuevo_error == 0:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        #         anterior_error = nuevo_error
-        #         nuevo_error = abs(theta - destino)
-        #         print(theta)
-        # else:
-        #     while abs(theta - destino) >= 45 or anterior_error < nuevo_error or nuevo_error == 0:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        #         anterior_error = nuevo_error
-        #         nuevo_error = abs(theta - destino)
-        #         print(theta)
-
-        # print("[Giro] Voy a girar en sentido ", sentido_giro, "\n")
-        # self.setSpeed(0, np.radians(sentido_giro / 2.0))
-
-        # theta = (self.read_gyro() + 180) % 360 - 180
-        # print("[Giro] Mi orientación actual REAL es: ", theta, "\n")
-
-        # print("[Giro] Mi orientación en [-180, 180] es: ", theta, "\n")
-        # print("[Giro] La orientación a la que quiero ir es: ", destino, "\n")
-
-        # # Mantenemos el giro mientras la diferencia con el ángulo objetivo sea >= 1.0
-        # anterior_error = abs(theta - destino)
-        # nuevo_error = anterior_error
-        # if destino == 180 or destino == -180:
-        #     while ((theta < 185 or theta > -185) or anterior_error > nuevo_error) and nuevo_error != 0:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        #         anterior_error = nuevo_error
-        #         nuevo_error = abs(theta - destino)
-        #         print(theta)
-        # else:
-        #     while (abs(theta - destino) >= 5 or anterior_error > nuevo_error ) and nuevo_error != 0:
-        #         theta = self.read_gyro()
-        #         theta = (theta + 180) % 360 - 180
-        #         anterior_error = nuevo_error
-        #         nuevo_error = abs(theta - destino)
-        #
-        #         print("La distancia es demasiado grande: ", abs(theta - destino) >= 5)
-        #         print("Ha incrementado el error:  ")
-
-        # print("[Giro] Angulo final tras girar:", theta)
         self.setSpeed(0, 0)
 
     def goTo(self, Map2D, x_ini, y_ini, x_next, y_next):

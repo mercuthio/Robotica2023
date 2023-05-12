@@ -14,7 +14,7 @@ import time
 
 TAM_BALDOSAS = 40  # cm
 Y_INICAL_CORRECTA = -2 * TAM_BALDOSAS  # cm
-DISTANCIA_OPTIMA_PARED = 15
+DISTANCIA_OPTIMA_PARED = 18
 
 
 def main(args):
@@ -23,7 +23,7 @@ def main(args):
         robot = Robot()
 
         # Do not create log file if told
-        if args.log == False:
+        if args.log == "False":
             robot.log_file_enabled = False
 
         # Init gyro, light sensor and sonar
@@ -52,6 +52,9 @@ def main(args):
 
         print("[c] Color de la cartulina:", color)
 
+        robot.BP.set_sensor_type(
+            robot.BP.PORT_3, robot.BP.SENSOR_TYPE.NXT_LIGHT_OFF)
+
         # Esperar input del usuario para comenzar el circuito
         input("[+] Color obtenido, pulse una tecla para continuar...")
 
@@ -79,11 +82,11 @@ def main(args):
         if robot.salida == "A":
             mapa = "mapaA_CARRERA.txt"
             start_pos = [1, 2]
-            finish_pos = [4, 4]
+            finish_pos = [3, 3]
         else:  # Case Map B
             mapa = "mapaB_CARRERA.txt"
             start_pos = [5, 2]
-            finish_pos = [2, 4]
+            finish_pos = [3, 3]
 
         map_file = "maps/" + mapa
         myMap = Map2D(map_file)
@@ -95,22 +98,37 @@ def main(args):
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         if robot.salida == "A":
-            robot.turnOdometry(90, 65)
+            robot.turnOdometry(-90, 65)
         else:
-            robot.turnOdometry(-90, 105)
+            robot.turnOdometry(90, 115)
+
+        robot.setSpeed(20, 0)
+        time.sleep(3)
+        robot.setSpeed(0, 0)
+
 
         img_r2 = cv2.imread("imagenes/R2-D2_s.png")
         img_bb8 = cv2.imread("imagenes/BB8_s.png")
 
         salida = check_output(cam, img_r2, img_bb8, robot.salida)
         print("La salida es por la", salida)
+
+        contador = 0
+
         while salida == "No encontrado":
             # Nos acercamos un poco
             robot.setSpeed(10, 0)
-            time.sleep(1)
+            time.sleep(0.5)
             robot.setSpeed(0, 0)
             salida = check_output(cam, img_r2, img_bb8, robot.salida)
             print("=== La salida es por la", salida, "===")
+            contador += 1
+            if contador >= 5:
+                if robot.salida == "A":
+                    salida = "izquierda"
+                else:
+                    salida = "derecha"
+                break
 
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
         print("                    PHASE 4: GET BALL                  ")
@@ -135,12 +153,27 @@ def main(args):
 
             if salida == "izquierda":
                 robot.turnOdometry(90, -180)
+                destino = 180
             else:
                 robot.turnOdometry(-90, 0)
+                destino = 0
 
             # Nos acercamos a la pared hasta la distancia que toca.
             while robot.read_ultrasonic() > DISTANCIA_OPTIMA_PARED:
-                robot.setSpeed(20, 0)
+                time.sleep(0.01)
+                theta = robot.read_gyro()
+                theta = (theta + 180) % 360 - 180
+                if destino == 180 and theta < 0:
+                    destino = -180
+                # if destino == 0 and theta < 0:
+                #     destino = 180
+                #     theta = -theta
+                # print("[Recalculando w]:", np.radians((destino_fin - theta) / 1.0), destino_fin)
+                if destino == 180 or destino == -180:
+                    robot.setSpeed(20, np.radians((destino - theta) / 1.0))
+                else:
+                    robot.setSpeed(20, 0)
+                _, y_actual, _ = robot.readOdometry()
             robot.setSpeed(0, 0)
 
             blob_red = get_red(cam, False)
@@ -175,8 +208,8 @@ def main(args):
             time.sleep(0.01)
             theta = robot.read_gyro()
             theta = (theta + 180) % 360 - 180
-            # print("[Recalculando w]:", np.radians((destino - theta) / 3.0), destino)
-            robot.setSpeed(20, np.radians((destino - theta) / 3.0))
+            # print("[Recalculando w]:", np.radians((destino - theta) / 1.0), destino)
+            robot.setSpeed(20, np.radians((destino - theta) / 1.0))
             _, y_actual, _ = robot.readOdometry()
 
         # # This currently unconfigure the sensors, disable the motors,
@@ -201,7 +234,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-p", "--plot", help="plot odometry", action='store_true')
     parser.add_argument(
-        "-l", "--log", help="save odometry log file", type=bool, default=True)
+        "-l", "--log", help="save odometry log file", type=str, default="True")
     args = parser.parse_args()
 
     main(args)

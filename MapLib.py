@@ -508,7 +508,6 @@ class Map2D:
             distancia_optima = 15
             # Corregimos la distancia para quedarnos a justo 13 cm del obstaculo
             if abs(distancia - distancia_optima) > 0.5:
-                time.sleep(1)
                 robot.setSpeed(distancia - distancia_optima, 0)
                 time.sleep(1)
                 robot.setSpeed(0, 0)

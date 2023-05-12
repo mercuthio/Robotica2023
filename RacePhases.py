@@ -16,6 +16,15 @@ def slalom(robot, id):
 
         robot.setSpeed(0, 0)
 
+        # Ajuste de theta
+        theta = robot.read_gyro()
+        theta = (theta + 180) % 360 - 180
+
+        if theta > 0 and theta <= 90:
+            robot.turnOdometry(-20, 0)
+        elif theta >= -90 and theta < 0:
+            robot.turnOdometry(20, 0)
+
         fix_position2(robot)
 
         robot.setSpeed(40*np.pi/6, np.radians(-180 / 6))
@@ -38,24 +47,22 @@ def slalom(robot, id):
         # Ajustamos con pared 2
         fix_position2(robot)
         robot.turnOdometry(90, 0)
-
-        # Con 45 grados
-        # robot.turnOdometry(-90, -135)
-        # robot.setSpeed(np.pi * np.sqrt((35*35 + 21*21) / 2)/8, np.radians(90 / 8))
-        # time.sleep(8)
-        # robot.setSpeed(np.pi * np.sqrt((35*35 + 25*25) / 2)/8, np.radians(-90 / 8))
-        # time.sleep(8)
-        # robot.turnOdometry(20, -180)
-        # fix_position(robot)
-        # robot.turnOdometry(90, 0)
     else:
 
         robot.turnOdometry(90, 0)
 
-        robot.setSpeed(40*np.pi/4, np.radians(-180 / 4))
-        time.sleep(4)
+        robot.setSpeed(40*np.pi/4.0, np.radians(-180 / 4.0))
+        time.sleep(4.0)
 
         robot.setSpeed(0, 0)
+
+        theta = robot.read_gyro()
+        theta = (theta + 180) % 360 - 180
+
+        if theta >= 90 and theta <= 179:
+            robot.turnOdometry(20, -180)
+        elif theta > -180 and theta < -90:
+            robot.turnOdometry(-20, -180)
 
         fix_position2(robot)
 
@@ -65,10 +72,13 @@ def slalom(robot, id):
         robot.setSpeed(0, 0)
 
         # Ajuste de theta
-        if robot.read_gyro() < -180:
-            robot.turnOdometry(20, -180)
-        elif robot.read_gyro() > 180:
-            robot.turnOdometry(-20, -180)
+        theta = robot.read_gyro()
+        theta = (theta + 180) % 360 - 180
+
+        if theta > 0 and theta <= 90:
+            robot.turnOdometry(-20, 0)
+        elif theta >= -90 and theta < 0:
+            robot.turnOdometry(20, 0)
 
         # Ajustamos con pared 1
         fix_position(robot)
