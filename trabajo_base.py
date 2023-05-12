@@ -126,23 +126,22 @@ def main(args):
         print("                     PHASE 5: LEAVE                    ")
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-        # Nos ponemos mirando a la orientación que toca (dependiendo de donde se
-        # encuentre el R2D2 y el BB8)
-
-        if salida == "izquierda":
-            robot.turnOdometry(90, -180)
-        else:
-            robot.turnOdometry(-90, 0)
-
-
-        # Nos acercamos a la pared hasta la distancia que toca.
-        while robot.read_ultrasonic() > DISTANCIA_OPTIMA_PARED:
-            robot.setSpeed(20, 0)
-        robot.setSpeed(0, 0)
-
         blob_red = False
 
         while blob_red == False:
+
+            # Nos ponemos mirando a la orientación que toca (dependiendo de donde se
+            # encuentre el R2D2 y el BB8)
+
+            if salida == "izquierda":
+                robot.turnOdometry(90, -180)
+            else:
+                robot.turnOdometry(-90, 0)
+
+            # Nos acercamos a la pared hasta la distancia que toca.
+            while robot.read_ultrasonic() > DISTANCIA_OPTIMA_PARED:
+                robot.setSpeed(20, 0)
+            robot.setSpeed(0, 0)
 
             blob_red = get_red(cam, False)
             blob_red = get_red(cam, False)

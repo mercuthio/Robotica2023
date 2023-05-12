@@ -408,7 +408,7 @@ class Robot:
             if destino == 180 and theta < 0:
                 destino = -180
 
-            # print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
+            print("[Recalculando w]:", np.radians((destino - theta) / 3.0))
 
             self.setSpeed(v, np.radians((destino - theta) / 3.0))
 
