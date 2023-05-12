@@ -7,6 +7,7 @@ import numpy as np
 from Robot import Robot
 from MapLib import Map2D
 from image_match import match_images
+from get_blob import get_red
 from RacePhases import *
 import time
 
@@ -94,9 +95,9 @@ def main(args):
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         if robot.salida == "A":
-            robot.turnOdometry(90, 70)
+            robot.turnOdometry(90, 65)
         else:
-            robot.turnOdometry(-90, 115)
+            robot.turnOdometry(-90, 105)
 
         img_r2 = cv2.imread("imagenes/R2-D2_s.png")
         img_bb8 = cv2.imread("imagenes/BB8_s.png")
@@ -117,6 +118,7 @@ def main(args):
 
         targetSize = 230
         target = 320
+
         robot.trackObject(cam, targetSize, target, colorRangeMin=[
             0, 0, 0], colorRangeMax=[255, 255, 255])
 
@@ -132,10 +134,31 @@ def main(args):
         else:
             robot.turnOdometry(-90, 0)
 
+
         # Nos acercamos a la pared hasta la distancia que toca.
         while robot.read_ultrasonic() > DISTANCIA_OPTIMA_PARED:
             robot.setSpeed(20, 0)
         robot.setSpeed(0, 0)
+
+        blob_red = False
+
+        while blob_red == False:
+
+            blob_red = get_red(cam, False)
+            blob_red = get_red(cam, False)
+            blob_red = get_red(cam, False)
+
+            # Si ve bastante rojo, la ha cogido
+            if blob_red:
+                # Pelota conseguida
+                print(" === CONFIRMADO. Llevo la pelota. ===")
+            # No ha atrapado la pelota
+            else:
+                print("No he conseguido atrapar la pelota.")
+                robot.uncatch()
+
+                robot.trackObject(cam, targetSize, target, colorRangeMin=[
+                0, 0, 0], colorRangeMax=[255, 255, 255])
 
         # Volvemos a girar para ver hacia el oeste
         if salida == "izquierda":
