@@ -8,15 +8,17 @@ def get_img(cam):
     _, img = cam.read()
     return img
 
-
+# Devuelve el lado en el que se encuentra el robot a buscar.
+# En caso de no encontrar a los dos devuelve "No encontrado"
 def check_output(robot_img_r2, robot_img_bb8, test_img, mapa):
+    '''Returns whether the robot is on the left or the right '''
+
+    # la funcion match_images calcula el punto medio del cuadrado de homografía
+    # y devuelve su componente x
     found_r2, w_pos_r2 = match_images(robot_img_r2, test_img)
     found_bb8, w_pos_bb8 = match_images(robot_img_bb8, test_img)
 
     if found_r2 and found_bb8:
-        # image_width = test_img.shape[1]
-
-        # If
         if mapa == "A":
             return "izquierda" if w_pos_r2 < w_pos_bb8 else "derecha"
         else:

@@ -169,6 +169,8 @@ def main(args):
                 #     destino = 180
                 #     theta = -theta
                 # print("[Recalculando w]:", np.radians((destino_fin - theta) / 1.0), destino_fin)
+
+                # Corregimos la orientación del robot
                 if destino == 180 or destino == -180:
                     robot.setSpeed(20, np.radians((destino - theta) / 1.0))
                 else:
@@ -198,17 +200,19 @@ def main(args):
         else:
             robot.turnOdometry(90, 90)
 
-        # Sacamos de la odometría la y actual y la usamos para saber cuánto tenemos que
-        # avanzar (la distancia es la posición actual + el error)
+        # Avanzamos hasta alcanzar la salida siguiendo la odometria 
         _, y_actual, _ = robot.readOdometry()
         destino = 90
 
+        # Mientras no lleguemos a la salida
         while y_actual <= 15:
             # robot.setSpeed(20, 0)
             time.sleep(0.01)
             theta = robot.read_gyro()
             theta = (theta + 180) % 360 - 180
             # print("[Recalculando w]:", np.radians((destino - theta) / 1.0), destino)
+            
+            # Corregimos la orientación del robot
             robot.setSpeed(20, np.radians((destino - theta) / 1.0))
             _, y_actual, _ = robot.readOdometry()
 

@@ -33,7 +33,6 @@ def slalom(robot, id):
         robot.setSpeed(0, 0)
 
         # Ajuste de theta
-
         th =  robot.read_gyro()
         if th > -180 and th < -90:
             robot.turnOdometry(-20, -180)
@@ -90,6 +89,7 @@ def slalom(robot, id):
 
 
 def fix_position(robot):
+    '''Fixes the position of the robot with the noth or south wall after the slalom'''
     distancia = robot.read_ultrasonic()
     distancia_optima = 55
 
@@ -99,6 +99,7 @@ def fix_position(robot):
 
 
 def fix_position2(robot):
+    '''Fixes the position of the robot with the east wall after the slalom'''
     distancia_optima = 15
     distancia = robot.read_ultrasonic() % 40
 
@@ -108,16 +109,20 @@ def fix_position2(robot):
 
 
 def get_img(cam):
+    '''Takes an image with the camera'''
     _, img = cam.read()
     while img is None:
         _, img = cam.read()
     return img
 
-
+# Devuelve el lado en el que se encuentra el robot a buscar.
+# En caso de no encontrar a los dos devuelve "No encontrado"
 def check_output(cam, robot_img_r2, robot_img_bb8, mapa):
-
+    '''Returns whether the robot is on the left or the right '''
     test_img = get_img(cam)
 
+    # la funcion match_images calcula el punto medio del cuadrado de homografía
+    # y devuelve su componente x
     found_r2, w_pos_r2 = match_images(robot_img_r2, test_img)
     found_bb8, w_pos_bb8 = match_images(robot_img_bb8, test_img)
 
