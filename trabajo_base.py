@@ -98,7 +98,7 @@ def main(args):
         print("= = = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         if robot.salida == "A":
-            robot.turnOdometry(-90, 65)
+            robot.turnOdometry(-90, 60)
         else:
             robot.turnOdometry(90, 115)
 
@@ -213,7 +213,7 @@ def main(args):
             # print("[Recalculando w]:", np.radians((destino - theta) / 1.0), destino)
             
             # Corregimos la orientación del robot
-            robot.setSpeed(20, np.radians((destino - theta) / 1.0))
+            robot.setSpeed(30, np.radians((destino - theta) / 1.0))
             _, y_actual, _ = robot.readOdometry()
 
         # # This currently unconfigure the sensors, disable the motors,

@@ -117,9 +117,12 @@ class Robot:
 
         # print("Velocidad: {}, {}".format(speedDPS_left, speedDPS_right))
 
-        
-        self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
-        self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
+        if self.salida == "B":
+            self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
+            self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
+        else:
+            self.BP.set_motor_dps(self.BP.PORT_C, speedDPS_right)
+            self.BP.set_motor_dps(self.BP.PORT_B, speedDPS_left)
 
         # self.log_file.write("Actualizada velocidad = WI:{},WD:{}".format(speedDPS_left, speedDPS_right))
 
@@ -281,7 +284,7 @@ class Robot:
                     break
                 else:
                     old_a = a
-                    v = np.clip((A-a) / 10, -10, 30)
+                    v = np.clip((A-a) / 10, -15, 40)
                     w = np.radians(np.clip(-d / 10, -20, 20))
 
                 self.setSpeed(v, w)
@@ -303,21 +306,21 @@ class Robot:
                         targetPositionReached = True
 
                         # Avanzo hasta la pelota
-                        v_fin = 5.5
+                        v_fin = 11
 
                         if (A-a) <= 0:
                             v_fin += (A-a) / 10000.0
 
                         print("Seteando velocidad final", v_fin)
                         self.setSpeed(v_fin, 0)
-                        time.sleep(2)
+                        time.sleep(1)
                         self.setSpeed(0, 0)
 
                         # Bajo la cesta
                         self.catch()
 
                         # Espero un tiempo para comprobar
-                        time.sleep(1)
+                        time.sleep(0.2)
 
                         # Se comprueba si se ha obtenido la pelota
 
@@ -396,8 +399,8 @@ class Robot:
         """Moves to a new cell"""
         change = self._getPosChange(pos_ini)
 
-        min_vel = 12.0
-        max_vel = 18.0
+        min_vel = 25.0
+        max_vel = 30.0
         while (self.B - change) > 1.0:
             time.sleep(0.01)
             v = np.clip(self.B - change, min_vel, max_vel)
